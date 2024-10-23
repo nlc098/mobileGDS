@@ -19,7 +19,6 @@ const User = () => {
     const fetchUser = async () => {
       try {
         const userData = await getUserByUsername();
-       console.log(userData)
         if (userData && userData.username) {
           const userObject = {
             username: userData.username,

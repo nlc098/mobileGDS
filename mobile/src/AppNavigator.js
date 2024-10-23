@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, ActivityIndicator } from 'react-native'; 
 import Login from './screens/Login';
 import RegisterScreen from './screens/Register';
 import Home from './screens/Home';
 import User from './screens/User';
 import Page3 from './screens/Page3';
 import PerfilUser from './screens/PerfilUser';
+import IndividualGameSet from './screens/IndividualGameSet';
+import GameSet from './screens/GameSet';
 
 const Stack = createNativeStackNavigator();
 
@@ -32,8 +35,12 @@ const AppNavigator = () => {
   }, []);
 
   if (loading) {
-    // Puedes mostrar un indicador de carga o una pantalla de bienvenida aquí
-    return null;
+    // Muestra un indicador de carga mientras se verifica la sesión
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
   }
 
   return (
@@ -66,6 +73,16 @@ const AppNavigator = () => {
       <Stack.Screen
         name="PerfilUser"
         component={PerfilUser}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="IndividualGameSet"
+        component={IndividualGameSet}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="GameSet"
+        component={GameSet} 
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

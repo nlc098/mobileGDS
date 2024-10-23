@@ -81,7 +81,8 @@ class ApiService {
   // Método para obtener el usuario por username
   async getUserByUsername(username) {
     try {
-      const token = await this.getToken(); // Obtener el token del almacenamiento
+      
+      const token = await this.getToken(); 
       if (!token) {
         throw new Error("Token no encontrado");
       }
@@ -89,7 +90,7 @@ class ApiService {
       const response = await fetch(`${API_URL}/api/admin/${username}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`, // Agregar el token en la cabecera
+          Authorization: `Bearer ${token}`,
         },
       });
   
@@ -97,12 +98,36 @@ class ApiService {
         throw new Error("No se pudo obtener el usuario");
       }
   
-      const data = await response.json();
-
-  
-      return data.body; // Devolver los datos del usuario
+      const data = await response.json();  
+      return data; // Devolver los datos del usuario
     } catch (error) {
-      console.error("Error al obtener el usuario:", error.message); // Mostrar el error en consola
+      console.error("Error al obtener el usuario:", error.message); 
+      throw new Error(error.message);
+    }
+  }
+   // Método para obtener todas las categorias
+   async getCategories() {
+    try {
+      const token = await this.getToken(); 
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+  
+      const response = await fetch(`${API_URL}/category/api/user`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("No se pudieron listar las categorías");
+      }
+  
+      const data = await response.json();  
+      return data;
+    } catch (error) {
+      console.error("Error al obtener las categorias:", error.message); 
       throw new Error(error.message);
     }
   }
@@ -114,7 +139,7 @@ const apiService = new ApiService();
 export const login = async (username, password) => {
   try {
     const data = await apiService.login(username, password);
-    return data;
+    return data; 
   } catch (error) {
     Alert.alert("Error", error.message);
     return null;
@@ -155,7 +180,7 @@ export const getToken = async () => {
 export const getUserByUsername = async () => {
   try {
     const username = await AsyncStorage.getItem("username"); // Obtener el nombre de usuario almacenado
-
+    
     if (!username) {
       throw new Error("Nombre de usuario no encontrado");
     }
@@ -168,4 +193,13 @@ export const getUserByUsername = async () => {
   }
 };
 
-
+// Exportar el método para listar categorias
+export const getCategories = async () => {
+  try {
+    const categorias = await apiService.getCategories();
+    return categorias;
+  } catch (error) {
+    console.error("Error al listar categorias", error.message);
+    return null;
+  }
+};

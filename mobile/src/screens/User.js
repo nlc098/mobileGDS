@@ -3,13 +3,22 @@ import { View, Text, StyleSheet, ImageBackground, Pressable, Image } from 'react
 import { useNavigation } from '@react-navigation/native';
 import HeaderMain from '../components/HeaderMain';
 import FooterButtons from '../components/FooterButtons';
-import { textStyles } from "../styles/texts";
 import { buttonStyles } from "../styles/buttons";
-import Icon from 'react-native-vector-icons/Ionicons';
+import { logout } from '../CallsAPI';
 
 const User = () => {
 
   const navigation = useNavigation();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setUsername(''); // Limpiar el nombre de usuario en el estado
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      Alert.alert("Error", "No se pudo cerrar sesión.");
+    }
+  };
 
   return (
     <ImageBackground 
@@ -32,8 +41,7 @@ const User = () => {
           <Text style={buttonStyles.buttonText}>Cambiar contraseña</Text>
         </Pressable>
         <Pressable
-          style={buttonStyles.buttonfullwidth}
-          onPress={() => console.log("Cerrar sesión")}>
+          style={buttonStyles.buttonfullwidth} onPress={handleLogout}>
           <Text style={buttonStyles.buttonText}>Cerrar sesión</Text>
         </Pressable>
 

@@ -8,7 +8,7 @@ export const buttonStyles = StyleSheet.create({
     borderStyle: "solid",
     borderWidth: 2,
     borderColor: "#653532",
-    width: "90%",
+    width: "70%",
     alignItems: "center",
     marginBottom: 40,
   },
@@ -25,7 +25,7 @@ export const buttonStyles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
-    fontSize: 16,
+    fontSize: 20,
     textAlign: "center",
     fontWeight: "bold",
   },
