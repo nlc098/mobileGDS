@@ -14,7 +14,6 @@ const GameSet = () => {
     const fetchCategories = async () => {
       try {
         const categorias = await getCategories();
-        console.log(categorias);
         if (categorias == null) {
           throw new Error('Error al obtener las categorías');
         }
@@ -54,11 +53,10 @@ const GameSet = () => {
 
   const handleShowSelected = () => {
     // Obtiene los nombres de las categorías seleccionadas
-    const selectedCategoryNames = categories
+    const selectedCategoryID = categories
       .filter(category => selectedCategories.includes(category.id))
-      .map(category => category.name);
-      
-    navigation.navigate('IndividualGameSet', { selectedCategoryNames }); // Redirige y envía los nombres de las categorías seleccionadas
+      .map(category => category.id);
+    navigation.navigate('IndividualGameSet', { selectedCategoryID }); // Redirige y envía los nombres de las categorías seleccionadas
   };
 
   return (
@@ -81,10 +79,10 @@ const GameSet = () => {
         </View>
 
         <TouchableOpacity 
-          style={styles.showSelectedButton} 
+          style={styles.startButton} 
           onPress={handleShowSelected} // Cambia para usar la función de redirección
         >
-          <Text style={styles.buttonText}>Ir a Juego Individual</Text>
+          <Text style={styles.buttonText}>Iniciar partida</Text>
         </TouchableOpacity>
 
         <FooterButtons />
@@ -125,31 +123,36 @@ const styles = StyleSheet.create({
     shadowRadius: 5, 
   },
   categoryItem: {
-    flex: 1,
+    flex: 1, 
     padding: 15,
     borderWidth: 1,
     borderColor: 'black',
-    borderRadius: 15, // Esquinas circulares
-    margin: 5,
-    backgroundColor: 'white',
+    borderRadius: 25, 
+    margin: 5, 
+    backgroundColor: '#F9F5DC', 
+    opacity: 0.8,
     alignItems: 'center',
+    justifyContent: 'center', 
   },
   selectedCategory: {
-    backgroundColor: '#D3D3D3',
+    backgroundColor: '#B36F6F', 
   },
   categoryText: {
-    fontSize: 18, // Aumenta el tamaño de la letra
-    textAlign: 'center', // Centra el texto
+    fontSize: 18,
+    textAlign: 'center',
+    justifyContent: 'center', 
   },
   row: {
     flex: 1,
     justifyContent: 'space-between',
   },
-  showSelectedButton: {
-    backgroundColor: '#4CAF50',
-    borderRadius: 5,
+  startButton: {
+    backgroundColor: '#B36F6F',
+    borderRadius: 40,
     padding: 10,
-    marginTop: 20,
+    marginTop: 10,
+    width: "50%",
+    alignItems: "center",
   },
   buttonText: {
     color: 'white',

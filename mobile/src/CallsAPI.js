@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Importar AsyncStorage
 
-const API_URL = "http://192.168.1.9:2024";
+const API_URL = "http://192.168.1.2:2024";
 
 // Clase con los endpoints
 class ApiService {
@@ -131,6 +131,71 @@ class ApiService {
       throw new Error(error.message);
     }
   }
+
+
+  // Método para cargar un juego con las categorías y el modo de juego
+  async loadGame(categories, modeGame) {
+    try {
+      const token = await this.getToken(); // Obtener el token del usuario
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+      const response = await fetch(`${API_URL}/api/user/game/loadGame`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          categories: categories,
+          modeGame: modeGame,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al cargar el juego");
+      }
+
+      const data = await response.json();
+      return data; 
+    } catch (error) {
+      console.error(error.message);
+      throw new Error(error.message);
+    }
+  }
+
+  // Método para cargar los datos de las fases de juego
+  async initgame(userId, categories, modeGames) {
+    try {
+      const token = await this.getToken(); // Obtener el token del usuario
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+      const response = await fetch(`${API_URL}/api/user/game/initGame`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userId,
+          parCatMod: categories.map((category, index) => ({
+            cat: category,
+            mod: modeGames[index]
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al cargar el juego");
+      }
+
+      const data = await response.json();
+      return data; 
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
 }
 
 const apiService = new ApiService();
@@ -156,7 +221,6 @@ export const registrarse = async (username, email, password, birthday, country, 
   }
 };
 
-// Exportar el método logout
 export const logout = async () => {
   try {
     await apiService.logout();
@@ -165,7 +229,6 @@ export const logout = async () => {
   }
 };
 
-// Exportar el método para obtener el token
 export const getToken = async () => {
   try {
     const token = await apiService.getToken();
@@ -176,7 +239,6 @@ export const getToken = async () => {
   }
 };
 
-// Exportar el método para obtener el usuario por username
 export const getUserByUsername = async () => {
   try {
     const username = await AsyncStorage.getItem("username"); // Obtener el nombre de usuario almacenado
@@ -193,13 +255,33 @@ export const getUserByUsername = async () => {
   }
 };
 
-// Exportar el método para listar categorias
 export const getCategories = async () => {
   try {
     const categorias = await apiService.getCategories();
     return categorias;
   } catch (error) {
     console.error("Error al listar categorias", error.message);
+    return null;
+  }
+};
+
+
+export const loadGame = async (categories, modeGame) => {
+  try {
+    const data = await apiService.loadGame(categories, modeGame);
+    return data;
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+};
+
+export const initGame = async (userId, categories, modeGames) => {
+  try {
+    const data = await apiService.initgame(userId, categories, modeGames);
+    return data;
+  } catch (error) {
+    Alert.alert("Error", error.message);
     return null;
   }
 };

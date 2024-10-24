@@ -1,88 +1,109 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
+import { initGame } from '../CallsAPI';
 
-const SlotMachine = () => {
-  // Opciones para cada cuadrado
-  const options = [
-    Array.from({ length: 9 }, (_, i) => (i + 1).toString()), // Números del 1 al 9
-    Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)), // Letras de A a Z
-    ['🍒', '🍋', '🍊'] // Emojis
-  ];
+const SlotMachine = ({ items }) => {
+  const [results, setResults] = useState([]);
+  const [spinning, setSpinning] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const spinAnimation = useRef(new Animated.Value(0)).current;
 
-  const [results, setResults] = useState([options[0][0], options[1][0], options[2][0]]); // Estado inicial
-  const [spinning, setSpinning] = useState(false); // Estado de giro
-  const [showResults, setShowResults] = useState(false); // Estado para mostrar resultados
-  const spinAnimation = useRef(new Animated.Value(0)).current; // Inicializa la animación
+  useEffect(() => {
+    if (items.length > 0) {
+      // Establece los resultados iniciales a las primeras palabras clave de cada categoría
+      const initialResults = items.map(item => item.keywords[0]);
+      setResults(initialResults);
+      
+      // Iniciar el giro automáticamente al cargar el componente
+      spinSlots();
+    }
+  }, [items]);
 
   const spinSlots = () => {
-    if (spinning) return; // Evitar múltiples giros
+    if (spinning) return; // Evita iniciar un nuevo giro mientras ya está girando
     setSpinning(true);
-    setShowResults(false); // Oculta resultados antes de girar
+    setShowResults(false);
 
-    // Reinicia la animación
     spinAnimation.setValue(0);
-
-    const spins = 10; // Número de giros
+    const spins = 10; 
     let currentSpin = 0;
 
     const spin = () => {
-      // Genera nuevos resultados aleatorios
-      const newResults = results.map((_, index) => {
-        const randomIndex = Math.floor(Math.random() * options[index].length);
-        return options[index][randomIndex];
+      const newResults = items.map(item => {
+        const randomIndex = Math.floor(Math.random() * item.keywords.length);
+        return item.keywords[randomIndex];
       });
-      setResults(newResults); // Actualiza resultados en cada giro
 
-      // Calcula la duración del giro (disminuye con el tiempo)
-      const duration = Math.max(200 - (currentSpin * 15), 100); // Duración mínima de 100 ms
+      setResults(newResults); // Actualiza los resultados en cada giro
 
-      // Animación de girar (verticalmente)
+      const duration = Math.max(200 - (currentSpin * 15), 100);
       Animated.timing(spinAnimation, {
         toValue: 1,
-        duration: duration, // Duración del giro
+        duration: duration,
         useNativeDriver: true,
       }).start(() => {
         currentSpin++;
         if (currentSpin < spins) {
-          // Reinicia la animación para el siguiente giro
-          spinAnimation.setValue(0); // Reinicia la animación
-          spin(); // Llama al siguiente giro
+          spinAnimation.setValue(0);
+          spin();
         } else {
-          setSpinning(false); // Restablece el estado de giro
-          setShowResults(true); // Muestra los resultados al finalizar el giro
-          console.log("Resultados finales (lista):", newResults); // Imprime resultados finales
+          setSpinning(false);
+          setShowResults(true);
+          console.log("Resultados finales:", newResults);
+          sendResults(newResults);
         }
       });
     };
 
-    spin(); // Inicia el primer giro
+    spin();
   };
 
-  // Transformación de la animación
   const translateY = spinAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -80], // Cambia este valor para ajustar cuánto se desplaza
+    outputRange: [0, -80],
   });
 
   const translateYBottom = spinAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: [80, 0], // Este valor mueve el nuevo símbolo hacia arriba
+    outputRange: [80, 0],
   });
 
-  // Inicia el giro cuando el componente se monta
-  useEffect(() => {
-    spinSlots();
-  }, []);
+  const sendResults = async (finalResults) => {
+    try {
+      const userId = '1234'; // User ID que se va a enviar
+  
+      // Asegúrate de que las categorías sean números
+      const parCatMod = items.map((item, index) => ({
+        cat: parseInt(item.category, 10), // Convertir a número
+        mod: finalResults[index]
+      }));
+  
+      const payload = {
+        userId,
+        parCatMod,
+      };
+  
+      // Verificar el formato del payload antes de enviarlo
+      console.log("Payload que se enviará:", JSON.stringify(payload, null, 2));
+  
+      const response = await initGame(userId, parCatMod);
+  
+      console.log("Respuesta del endpoint:", response);
+    } catch (error) {
+      console.error("Error al enviar resultados:", error.message);
+    }
+  };  
+  
 
   return (
     <View style={styles.slotContainer}>
       <View style={styles.slotRow}>
-        {results.map((item, index) => (
+        {results.map((result, index) => (
           <View key={index} style={styles.slotBox}>
             <Animated.View style={[styles.slotTextContainer, { transform: [{ translateY }] }]}>
-              <Text style={styles.slotText}>{item}</Text>
+              <Text style={styles.slotText}>{result}</Text>
             </Animated.View>
-            {showResults && ( // Mostrar el nuevo resultado después de que haya terminado el giro
+            {showResults && (
               <Animated.View style={[styles.slotTextContainer, { transform: [{ translateY: translateYBottom }] }]}>
                 <Text style={styles.slotText}>{results[index]}</Text>
               </Animated.View>
@@ -92,9 +113,10 @@ const SlotMachine = () => {
       </View>
       {showResults && (
         <View style={styles.resultContainer}>
-          {results.map((result, index) => (
-            <Text key={index} style={styles.resultText}>Resultado {index + 1}: {result}</Text>
+          {items.map((item, index) => (
+            <Text key={index} style={styles.resultText}>{item.category}: {results[index]}</Text>
           ))}
+          
         </View>
       )}
     </View>
@@ -108,7 +130,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   slotRow: {
-    flexDirection: 'row', // Asegura que los textos estén en la misma fila
+    flexDirection: 'row',
   },
   slotBox: {
     width: 80,
@@ -119,14 +141,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     margin: 5,
     overflow: 'hidden',
-    position: 'relative', // Permite que los elementos hijos se posicionen relativos al cuadro
+    position: 'relative',
   },
   slotTextContainer: {
     position: 'absolute',
     width: '100%',
     height: '100%',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center', 
   },
   slotText: {
     fontSize: 48,
