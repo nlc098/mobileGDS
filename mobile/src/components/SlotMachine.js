@@ -1,40 +1,42 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import { initGame } from '../CallsAPI';
+import { useNavigation } from '@react-navigation/native';
 
 const SlotMachine = ({ items }) => {
   const [results, setResults] = useState([]);
   const [spinning, setSpinning] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const spinAnimation = useRef(new Animated.Value(0)).current;
+  const navigation = useNavigation();
 
   useEffect(() => {
     if (items.length > 0) {
-      // Establece los resultados iniciales a las primeras palabras clave de cada categoría
-      const initialResults = items.map(item => item.keywords[0]);
+      // Filtrar categorías con gameModes
+      const categoriesWithGameModes = items.filter(item => item.gameModes && item.gameModes.length > 0);
+      const initialResults = categoriesWithGameModes.length > 0 ? [categoriesWithGameModes[0].gameModes[0]] : [];
       setResults(initialResults);
       
-      // Iniciar el giro automáticamente al cargar el componente
-      spinSlots();
+      spinSlots(categoriesWithGameModes);
     }
   }, [items]);
 
-  const spinSlots = () => {
-    if (spinning) return; // Evita iniciar un nuevo giro mientras ya está girando
+  const spinSlots = (categoriesWithGameModes) => {
+    if (spinning) return;
     setSpinning(true);
     setShowResults(false);
 
     spinAnimation.setValue(0);
-    const spins = 10; 
+    const spins = 10;
     let currentSpin = 0;
 
     const spin = () => {
-      const newResults = items.map(item => {
-        const randomIndex = Math.floor(Math.random() * item.keywords.length);
-        return item.keywords[randomIndex];
+      const newResults = categoriesWithGameModes.map(item => {
+        const modes = item.gameModes;
+        const randomIndex = Math.floor(Math.random() * modes.length);
+        return modes[randomIndex];
       });
 
-      setResults(newResults); // Actualiza los resultados en cada giro
+      setResults(newResults);
 
       const duration = Math.max(200 - (currentSpin * 15), 100);
       Animated.timing(spinAnimation, {
@@ -49,13 +51,32 @@ const SlotMachine = ({ items }) => {
         } else {
           setSpinning(false);
           setShowResults(true);
-          console.log("Resultados finales:", newResults);
-          sendResults(newResults);
+
+          // Esperar 10 segundos antes de navegar
+          setTimeout(() => {
+            logResults(newResults, categoriesWithGameModes);
+          }, 4000); // 10 segundos
         }
       });
     };
 
     spin();
+  };
+
+  const logResults = (finalResults, categoriesWithGameModes) => {
+    const parCatMod = categoriesWithGameModes.map((item, index) => {
+      const categoryId = item.id; // Obtener la id de la categoría
+      const resultMode = finalResults[index];
+      return {
+        cat: categoryId, // ID de la categoría
+        mod: resultMode   // Modo del juego
+      };
+    });
+
+    navigation.navigate('GameLoad', {
+      userId: '1234', // Asegúrate de reemplazar con el ID de usuario correcto
+      parCatMod,
+    });
   };
 
   const translateY = spinAnimation.interpolate({
@@ -67,33 +88,6 @@ const SlotMachine = ({ items }) => {
     inputRange: [0, 1],
     outputRange: [80, 0],
   });
-
-  const sendResults = async (finalResults) => {
-    try {
-      const userId = '1234'; // User ID que se va a enviar
-  
-      // Asegúrate de que las categorías sean números
-      const parCatMod = items.map((item, index) => ({
-        cat: parseInt(item.category, 10), // Convertir a número
-        mod: finalResults[index]
-      }));
-  
-      const payload = {
-        userId,
-        parCatMod,
-      };
-  
-      // Verificar el formato del payload antes de enviarlo
-      console.log("Payload que se enviará:", JSON.stringify(payload, null, 2));
-  
-      const response = await initGame(userId, parCatMod);
-  
-      console.log("Respuesta del endpoint:", response);
-    } catch (error) {
-      console.error("Error al enviar resultados:", error.message);
-    }
-  };  
-  
 
   return (
     <View style={styles.slotContainer}>
@@ -113,10 +107,15 @@ const SlotMachine = ({ items }) => {
       </View>
       {showResults && (
         <View style={styles.resultContainer}>
-          {items.map((item, index) => (
-            <Text key={index} style={styles.resultText}>{item.category}: {results[index]}</Text>
-          ))}
-          
+          {items.map((item, index) => {
+            // Mostrar resultados solo si hay gameModes
+            if (item.gameModes.length > 0) {
+              return (
+                <Text key={index} style={styles.resultText}>{item.name}: {results[index]}</Text>
+              );
+            }
+            return null; // No mostrar nada si no hay gameModes
+          })}
         </View>
       )}
     </View>
@@ -133,7 +132,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   slotBox: {
-    width: 80,
+    width: 100,
     height: 80,
     borderWidth: 2,
     borderColor: 'black',
@@ -158,7 +157,7 @@ const styles = StyleSheet.create({
   },
   resultText: {
     fontSize: 20,
-  },
+  }, 
 });
 
 export default SlotMachine;

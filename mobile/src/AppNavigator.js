@@ -10,6 +10,7 @@ import Page3 from './screens/Page3';
 import PerfilUser from './screens/PerfilUser';
 import IndividualGameSet from './screens/IndividualGameSet';
 import GameSet from './screens/GameSet';
+import GameLoad from './screens/GameLoad'; // Importa la nueva pantalla GameLoad
 
 const Stack = createNativeStackNavigator();
 
@@ -83,6 +84,11 @@ const AppNavigator = () => {
       <Stack.Screen
         name="GameSet"
         component={GameSet} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="GameLoad"  // Añade la nueva pantalla GameLoad
+        component={GameLoad} 
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

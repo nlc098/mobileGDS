@@ -6,7 +6,7 @@ import SlotMachine from '../components/SlotMachine';
 const Page3 = () => {
   return (
     <MainMenu>
-        <SlotMachine/>
+        <Text>asdasdas</Text>
     </MainMenu>
   );
 };

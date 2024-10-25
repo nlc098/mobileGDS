@@ -5,19 +5,17 @@ import { loadGame } from '../CallsAPI';
 import SlotMachine from '../components/SlotMachine';
 import BackImage from '../components/BackImage';
 
-const IndividualGameSet = () => {
+const IndividualGameSet = ({ navigation }) => {
   const route = useRoute();
-  const { selectedCategoryID } = route.params; // Se obtienen las categorías seleccionadas para el juego
-  const [gameData, setGameData] = useState(null); 
+  const { selectedCategoryID } = route.params;
+  const [gameData, setGameData] = useState([]); 
 
   useEffect(() => {
     const fetchGameData = async () => {
       try {
-        // Llama a la API pasando las categorías seleccionadas y el modo de juego
         const response = await loadGame(selectedCategoryID, 'Single');
-        setGameData(response.categories); // Almacena las categorías y palabras clave en el estado
+        setGameData(response.categories);
       } catch (error) {
-        console.error("Error al cargar los datos del juego:", error.message);
         Alert.alert("Error", "No se pudieron cargar los datos del juego");
       }
     };
@@ -25,11 +23,25 @@ const IndividualGameSet = () => {
     fetchGameData();
   }, [selectedCategoryID]);
 
+  const handleSpinFinish = async (finalResults) => {
+    const userId = "1234"; // O obtén este valor de donde lo necesites
+    const parCatMod = gameData.map((item, index) => ({
+      cat: item.id,
+      mod: finalResults[index] || '', // Asegúrate de que esto no esté vacío
+    }));
+
+    // Esperar 30 segundos antes de navegar
+    setTimeout(() => {
+      navigation.navigate('GameLoad', { userId, parCatMod });
+    }, 30000);
+  };
+
   return (
     <BackImage>
       <View style={styles.container}>
-        {/* Componente SlotMachine colocado al principio */}
-        {gameData && <SlotMachine items={Object.entries(gameData).map(([category, keywords]) => ({ category, keywords }))} />}
+        {gameData.length > 0 && (
+          <SlotMachine items={gameData} onFinish={handleSpinFinish} />
+        )}
       </View>
     </BackImage>
   );
@@ -38,7 +50,7 @@ const IndividualGameSet = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start', // Alinea los elementos al principio
+    justifyContent: 'flex-start',
     alignItems: 'center',
     padding: 20,
   },
