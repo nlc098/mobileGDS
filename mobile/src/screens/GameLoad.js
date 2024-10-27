@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { initGame } from '../CallsAPI';  // Asegúrate de importar la función desde el archivo correcto
-import SlotMachine from '../components/SlotMachine'; // Asegúrate de importar el componente SlotMachine si es necesario
 
 const GameLoad = ({ route }) => {
   const { userId, parCatMod } = route.params; // Recibe los parámetros
@@ -18,22 +17,18 @@ const GameLoad = ({ route }) => {
         return;
       }
 
-      console.log("userID:", userId +"   CatID:", parCatMod.map(item => item.cat) +"   mod:", parCatMod.map(item => item.mod));
-
       try {
-        // Llama a la API usando el método initGame
         const responseData = await initGame(userId, parCatMod.map(item => item.cat), parCatMod.map(item => item.mod));
-        console.log("responseData:", responseData);
-        // Comprueba si hay una respuesta válida antes de intentar establecer el estado
+
         if (responseData) {
           setData(responseData);
         } else {
-          throw new Error("No se recibieron datos de la API."); // Lanza un error si no hay datos
+          throw new Error("No se recibieron datos de la API.");
         }
       } catch (err) {
-        setError(err.message); // Captura el error y establece el mensaje
+        setError(err.message);
       } finally {
-        setLoading(false); // Asegúrate de que loading se establezca en false al final
+        setLoading(false);
       }
     };
 
@@ -51,15 +46,20 @@ const GameLoad = ({ route }) => {
   if (error) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>{error}</Text> {/* Muestra el mensaje de error */}
+        <Text>{error}</Text>
       </View>
     );
   }
 
   return (
-    <View>
-      {data && data.categories ? (
-        <SlotMachine items={data.categories} /> // Asegúrate de pasar las categorías correctamente
+    <View style={{ padding: 16 }}>
+      {data && data.gameModes ? (
+        Object.entries(data.gameModes).map(([key, value]) => (
+          <View key={key} style={{ marginBottom: 16, padding: 10, borderColor: '#ccc', borderWidth: 1 }}>
+            <Text style={{ fontWeight: 'bold' }}>{value.name}</Text>
+            <Text>Info Game: {JSON.stringify(value.infoGame)}</Text>
+          </View>
+        ))
       ) : (
         <Text>No se pudo cargar la información del juego.</Text>
       )}

@@ -9,31 +9,12 @@ import { logout, getUserByUsername } from '../CallsAPI';
 import { buttonStyles } from '../styles/buttons';
 
 const Home = () => {
-  const [username, setUsername] = useState('');
   const navigation = useNavigation();
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await getUserByUsername();
-        if (userData && userData.username) {
-          setUsername(userData.username); // Mostrar el nombre del usuario
-        } else {
-          console.error("No se encontró el usuario");
-        }
-      } catch (error) {
-        console.error("Error al obtener el usuario:", error);
-      }
-    };
-
-    fetchUser();
-  }, []);
 
   // Función para manejar el cierre de sesión
   const handleLogout = async () => {
     try {
       await logout();
-      setUsername(''); // Limpiar el nombre de usuario en el estado
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
       Alert.alert("Error", "No se pudo cerrar sesión.");
@@ -51,9 +32,6 @@ const Home = () => {
         </TouchableOpacity>
         <TouchableOpacity style={buttonStyles.buttonfullwidth}>
           <Text style={buttonStyles.buttonText}>Partida Multijugador</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={buttonStyles.buttonfullwidth} onPress={handleLogout}>
-          <Text style={buttonStyles.buttonText}>Cerrar Sesión</Text>
         </TouchableOpacity>
         <FooterButtons />
       </View>

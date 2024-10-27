@@ -13,7 +13,6 @@ const User = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      setUsername(''); // Limpiar el nombre de usuario en el estado
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
       Alert.alert("Error", "No se pudo cerrar sesión.");

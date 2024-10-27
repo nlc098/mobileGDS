@@ -14,9 +14,6 @@ const Login = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      console.log(`Datos de inicio de sesión: 
-        Username: ${username} 
-        Password: ${password}`); // Formatear el log para mostrar los datos
       const result = await login(username, password);
       if (result && result.token) {
         // Guardar el token y el nombre de usuario en AsyncStorage

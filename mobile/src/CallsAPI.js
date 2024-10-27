@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Importar AsyncStorage
 
-const API_URL = "http://192.168.1.9:2024";
+const API_URL = "http://192.168.1.2:2024";
 
 // Clase con los endpoints
 class ApiService {
@@ -278,7 +278,6 @@ export const loadGame = async (categories, modeGame) => {
 
 export const initGame = async (userId, categories, modeGames) => {
   try {
-    console.log("hola                  " +categories+"        "+modeGames)
     const data = await apiService.initgame(userId, categories, modeGames);
     return data;
   } catch (error) {
