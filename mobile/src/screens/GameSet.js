@@ -68,6 +68,7 @@ const GameSet = () => {
       <View style={styles.container}>
         <HeaderMain />
         <Text style={styles.title}>Categorías</Text>
+        <Text style={styles.categoriesAlert}>Selecciona 3 categorías</Text>
         <View style={styles.card}>
           <FlatList
             data={categories}
@@ -79,8 +80,12 @@ const GameSet = () => {
         </View>
 
         <TouchableOpacity 
-          style={styles.startButton} 
-          onPress={handleShowSelected} // Cambia para usar la función de redirección
+          style={[
+            styles.startButton, 
+            selectedCategories.length !== 3 && styles.disabledButton
+          ]} 
+          onPress={handleShowSelected} 
+          disabled={selectedCategories.length !== 3}
         >
           <Text style={styles.buttonText}>Iniciar partida</Text>
         </TouchableOpacity>
@@ -157,6 +162,14 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontSize: 18,
+  },
+  disabledButton: {
+    backgroundColor: 'gray',
+  },
+  categoriesAlert: {
+    color: "#000",
+    marginBottom: 30,
+    fontSize: 16,
   },
 });
 

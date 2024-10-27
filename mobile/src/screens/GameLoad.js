@@ -1,27 +1,47 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
-import { initGame } from '../CallsAPI';  // Asegúrate de importar la función desde el archivo correcto
+import { useRoute } from '@react-navigation/native';
+import React, { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import { initGame } from '../CallsAPI';
+import OrderByDate from '../components/OrderByDate';
+import  OrderWord from '../components/OrderWord';
+import  GuessPhrase from '../components/GuessPhrase';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  Image,
+  ActivityIndicator
+} from "react-native";
 
-const GameLoad = ({ route }) => {
-  const { userId, parCatMod } = route.params; // Recibe los parámetros
+const brainDialog = require("../../assets/idle_brain.png");
+const fondo = require("../../assets/fondo_mobile.jpeg");
+const dialogbubble = require("../../assets/hint-globe.png");
+
+const InGameScreen = () => {
+  const route = useRoute();
+  const { userId, parCatMod } = route.params;
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // Estado para manejar errores
+  const [error, setError] = useState(null);
+  const [currentGame, setCurrentGame] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(30);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!userId || !parCatMod || parCatMod.length === 0) {
-        setError("Parámetros inválidos."); // Manejo de error si falta algún parámetro
+        setError("Parámetros inválidos.");
         setLoading(false);
         return;
       }
-
       try {
         const responseData = await initGame(userId, parCatMod.map(item => item.cat), parCatMod.map(item => item.mod));
 
         if (responseData) {
           setData(responseData);
+          console.log(responseData);
         } else {
           throw new Error("No se recibieron datos de la API.");
         }
@@ -34,6 +54,46 @@ const GameLoad = ({ route }) => {
 
     fetchData();
   }, [userId, parCatMod]);
+
+  const gameModes = data?.gameModes || {};
+  const gameKeys = Object.keys(gameModes);
+  const currentGameData = gameModes[gameKeys[currentGame]];
+
+  const renderGameComponent = () => {
+    switch (currentGameData.name) {
+      case 'Guess Phrase':
+        return (
+          <OrderWord
+        />
+        );
+      case 'Order Word':
+        return (
+          <OrderWord
+          />
+        );
+      case 'Order By Date':
+        return (
+          <OrderWord
+          />
+        );
+      default:
+        return <Text>Modo de juego no reconocido</Text>;
+    }
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 1) {
+          clearInterval(timer); // Detiene el cronómetro cuando llega a 0
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer); // Limpia el intervalo al desmontar el componente
+  }, []);
 
   if (loading) {
     return (
@@ -52,19 +112,157 @@ const GameLoad = ({ route }) => {
   }
 
   return (
-    <View style={{ padding: 16 }}>
-      {data && data.gameModes ? (
-        Object.entries(data.gameModes).map(([key, value]) => (
-          <View key={key} style={{ marginBottom: 16, padding: 10, borderColor: '#ccc', borderWidth: 1 }}>
-            <Text style={{ fontWeight: 'bold' }}>{value.name}</Text>
-            <Text>Info Game: {JSON.stringify(value.infoGame)}</Text>
-          </View>
-        ))
-      ) : (
-        <Text>No se pudo cargar la información del juego.</Text>
-      )}
-    </View>
+    <ImageBackground source={fondo} style={styles.container}>
+      <View style={styles.topRow}>
+        <Ionicons name="person-circle-outline" size={60} color="black" />
+        <AntDesign name="questioncircle" size={60} color="black" />
+        <Ionicons name="person-circle-outline" size={60} color="black" />
+      </View>
+
+      <View style={styles.timerContainer}>
+        <Text style={styles.timerText}>{timeLeft}</Text>
+      </View>
+
+      <View style={styles.brainContainer}>
+        <Image
+          source={brainDialog}
+          resizeMode="contain"
+          style={styles.brainDialog}
+        />
+      </View>
+      <View style={styles.speechBubbleContainer}>
+        <Image
+          source={dialogbubble}
+          resizeMode="contain"
+          style={styles.speechBubble}
+        />
+        <Text style={styles.bubbleText}>¡Apurate!</Text>
+      </View>
+      <View style={styles.questionContainer}>
+        {renderGameComponent()}
+      </View>
+    </ImageBackground>
   );
 };
 
-export default GameLoad;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    backgroundColor: "#f8f9fa",
+    paddingTop: 20,
+  },
+  topRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "90%",
+    marginBottom: 20,
+    marginTop: 20,
+  },
+  timerContainer: {
+    position: "absolute",
+    top: 150,
+    right: 70,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  timerText: {
+    fontSize: 40,
+    fontWeight: "bold",
+    color: "black",
+  },
+  brainContainer: {
+    top: 15,
+    left: 0,
+    position: "absolute",
+  },
+  brainDialog: {
+    top: 200,
+    left: 20,
+    height: 80,
+    width: 80,
+    position: "absolute",
+  },
+  speechBubbleContainer: {
+    position: "absolute",
+    top: 100,
+    right: 200,
+  },
+  speechBubble: {
+    width: 140,
+    height: 140,
+  },
+  bubbleText: {
+    color: "#333",
+    fontSize: 14,
+    textAlign: "center",
+    justifyContent: "center",
+    bottom: 90,
+  },
+  questionContainer: {
+    marginTop: 200,
+    width: "90%",
+    height: 500,
+    backgroundColor: "#F9F5DC",
+    opacity: 0.95,
+    padding: 20,
+    borderRadius: 8,
+    borderStyle: "solid",
+    borderWidth: 2,
+    borderColor: "#653532",
+    alignItems: "center",
+  },
+  questionText: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+    marginTop: 20,
+    marginBottom: 60,
+  },
+  slotsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 40,
+    marginTop: 30,
+  },
+  slot: {
+    borderBottomWidth: 2,
+    borderBottomColor: "#333",
+    width: 30,
+    marginHorizontal: 5,
+    alignItems: "center",
+  },
+  slotLetter: {
+    fontSize: 24,
+    color: "#333",
+  },
+  scrambledLettersContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+  letterButton: {
+    margin: 5,
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 5,
+  },
+  letter: {
+    fontSize: 18,
+    color: "#333",
+  },
+  removeButton: {
+    marginTop: 40,
+    padding: 10,
+    backgroundColor: "#ff6666",
+    borderRadius: 5,
+  },
+  removeButtonText: {
+    fontSize: 16,
+    color: "#fff",
+  },
+});
+
+export default InGameScreen;

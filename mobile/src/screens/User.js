@@ -1,10 +1,9 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, ImageBackground, Pressable, Image } from 'react-native';
+import React from "react";
+import { Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import HeaderMain from '../components/HeaderMain';
-import FooterButtons from '../components/FooterButtons';
 import { buttonStyles } from "../styles/buttons";
 import { logout } from '../CallsAPI';
+import MainMenu from "../components/MainMenu";
 
 const User = () => {
 
@@ -12,23 +11,16 @@ const User = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await logout(); 
+      navigation.navigate('Login');
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
-      Alert.alert("Error", "No se pudo cerrar sesión.");
     }
   };
-
+  
   return (
-    <ImageBackground 
-      source={require('../../assets/GDS-Words-Footer.png')} 
-      style={styles.background} 
-      resizeMode="cover" 
-    >
-      <View style={styles.container}>
-        <HeaderMain />
+    <MainMenu>
         <Text style={styles.title}>Perfil de Usuario</Text>
-
         <Pressable
           style={buttonStyles.buttonfullwidth}
           onPress={() => navigation.navigate('PerfilUser')}>
@@ -43,10 +35,7 @@ const User = () => {
           style={buttonStyles.buttonfullwidth} onPress={handleLogout}>
           <Text style={buttonStyles.buttonText}>Cerrar sesión</Text>
         </Pressable>
-
-        <FooterButtons />
-      </View>
-    </ImageBackground>
+    </MainMenu>
   );
 };
 
@@ -65,7 +54,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 60,
     textAlign: 'center',
   },
 });

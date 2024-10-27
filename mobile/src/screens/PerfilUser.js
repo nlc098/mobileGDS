@@ -49,7 +49,6 @@ const User = () => {
         <HeaderMain />
 
         <Pressable> 
-          {/* Si hay una URL de perfil, muestra la imagen, si no, muestra el ícono */}
           {user.urlPerfil ? (
             <Image 
               source={{ uri: user.urlPerfil }} 
@@ -62,7 +61,6 @@ const User = () => {
 
         <Text style={styles.changePhotoText}>Tap to change photo</Text>
 
-        {/* Contenedor que simula una carta */}
         <View style={styles.card}>
           <View style={styles.userInfo}>
             <Text style={styles.label}>Nombre de Usuario:</Text>

@@ -87,7 +87,7 @@ const AppNavigator = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="GameLoad"  // Añade la nueva pantalla GameLoad
+        name="GameLoad"
         component={GameLoad} 
         options={{ headerShown: false }}
       />

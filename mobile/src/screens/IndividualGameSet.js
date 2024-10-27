@@ -3,7 +3,7 @@ import { View, StyleSheet, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { loadGame } from '../CallsAPI'; 
 import SlotMachine from '../components/SlotMachine';
-import BackImage from '../components/BackImage';
+import BackImage from '../styles/BackImage';
 
 const IndividualGameSet = ({ navigation }) => {
   const route = useRoute();
@@ -27,7 +27,7 @@ const IndividualGameSet = ({ navigation }) => {
     const userId = "1234"; // O obtén este valor de donde lo necesites
     const parCatMod = gameData.map((item, index) => ({
       cat: item.id,
-      mod: finalResults[index] || '', // Asegúrate de que esto no esté vacío
+      mod: finalResults[index] || '',
     }));
 
     // Esperar 30 segundos antes de navegar
