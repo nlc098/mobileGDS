@@ -15,7 +15,6 @@ const SlotMachine = ({ items }) => {
       const categoriesWithGameModes = items.filter(item => item.gameModes && item.gameModes.length > 0);
       const initialResults = categoriesWithGameModes.length > 0 ? [categoriesWithGameModes[0].gameModes[0]] : [];
       setResults(initialResults);
-      
       spinSlots(categoriesWithGameModes);
     }
   }, [items]);

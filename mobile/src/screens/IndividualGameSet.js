@@ -3,7 +3,7 @@ import { View, StyleSheet, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { loadGame } from '../CallsAPI'; 
 import SlotMachine from '../components/SlotMachine';
-import BackImage from '../components/BackImage';
+import BackImage from '../styles/BackImage';
 
 const IndividualGameSet = ({ navigation }) => {
   const route = useRoute();

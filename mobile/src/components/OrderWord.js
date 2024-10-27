@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import BackImage from '../components/BackImage';
+import BackImage from '../styles/BackImage';
 import {buttonStyles} from '../styles/buttons'
 
 const shuffleWord = (word) => {
