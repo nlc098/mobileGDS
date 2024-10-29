@@ -2,12 +2,19 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { textStyles } from "../styles/texts"; 
 
+// Función para desordenar un array
+const shuffleArray = (array) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
 const OrderWord = ({ OWinfo }) => {
-  const scrambledWord = OWinfo.hint1.split(""); // Palabras desordenadas
+  const scrambledWord = OWinfo.hint2.split(""); // Palabras desordenadas
   const [selectedLetters, setSelectedLetters] = useState([]);
-  const [availableLetters, setAvailableLetters] = useState(
-    scrambledWord.filter(letter => letter !== " ") // Filtrar espacios
-  );
+  const [availableLetters, setAvailableLetters] = useState(shuffleArray(scrambledWord.filter(letter => letter !== " "))); // Filtrar espacios
 
   const handleLetterPress = (letter, index) => {
     if (selectedLetters.length < scrambledWord.length) {
@@ -21,7 +28,6 @@ const OrderWord = ({ OWinfo }) => {
       const updatedLetters = [...selectedLetters];
       const removedLetter = updatedLetters.pop();
       setSelectedLetters(updatedLetters);
-      // Si el carácter removido era un espacio, no se hace nada con availableLetters
       if (removedLetter !== " ") {
         setAvailableLetters((prev) => [...prev, removedLetter]);
       }
@@ -35,11 +41,15 @@ const OrderWord = ({ OWinfo }) => {
       {/* Contenedor de casilleros */}
       <View style={styles.slotsContainer}>
         {scrambledWord.map((letter, index) => (
-          <View key={index} style={styles.slot}>
-            <Text style={styles.slotLetter}>
-              {selectedLetters[index] ? selectedLetters[index] : " "}
-            </Text>
-          </View>
+          letter === " " ? (
+            <View key={index} style={styles.lineBreak} /> // Salto de línea si es un espacio
+          ) : (
+            <View key={index} style={styles.slot}>
+              <Text style={styles.slotLetter}>
+                {selectedLetters[index] ? selectedLetters[index] : " "}
+              </Text>
+            </View>
+          )
         ))}
       </View>
 
@@ -76,6 +86,7 @@ const styles = StyleSheet.create({
   },
   slotsContainer: {
     flexDirection: "row",
+    flexWrap: "wrap", // Para que las letras hagan salto de línea al llegar al final de la pantalla
     justifyContent: "center",
     marginBottom: 20,
   },
@@ -114,6 +125,11 @@ const styles = StyleSheet.create({
   removeButtonText: {
     fontSize: 16,
     color: "#fff",
+  },
+  lineBreak: {
+    width: "100%", // Hace que ocupe todo el ancho disponible para generar el salto de línea
+    height: 0,
+    marginBottom: 10,
   },
 });
 
