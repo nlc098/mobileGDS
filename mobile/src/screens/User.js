@@ -12,7 +12,6 @@ const User = () => {
   const handleLogout = async () => {
     try {
       await logout(); 
-      navigation.navigate('Login');
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     }

@@ -4,8 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { initGame } from '../CallsAPI';
 import OrderByDate from '../components/OrderByDate';
-import  OrderWord from '../components/OrderWord';
-import  GuessPhrase from '../components/GuessPhrase';
+import OrderWord from '../components/OrderWord';
+import GuessPhrase from '../components/GuessPhrase';
 import {
   View,
   Text,
@@ -60,22 +60,17 @@ const InGameScreen = () => {
   const currentGameData = gameModes[gameKeys[currentGame]];
 
   const renderGameComponent = () => {
+    if (!currentGameData) return <Text>Modo de juego no reconocido</Text>;
+
+    const gameInfo = currentGameData.infoGame[0];
+
     switch (currentGameData.name) {
       case 'Guess Phrase':
-        return (
-          <OrderWord
-        />
-        );
+        return <OrderWord OWinfo={gameInfo} />;
       case 'Order Word':
-        return (
-          <OrderWord
-          />
-        );
+        return <OrderWord OWinfo={gameInfo} />;
       case 'Order By Date':
-        return (
-          <OrderWord
-          />
-        );
+        return <OrderWord OWinfo={gameInfo} />;
       default:
         return <Text>Modo de juego no reconocido</Text>;
     }
@@ -219,49 +214,6 @@ const styles = StyleSheet.create({
     color: "#333",
     marginTop: 20,
     marginBottom: 60,
-  },
-  slotsContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: 40,
-    marginTop: 30,
-  },
-  slot: {
-    borderBottomWidth: 2,
-    borderBottomColor: "#333",
-    width: 30,
-    marginHorizontal: 5,
-    alignItems: "center",
-  },
-  slotLetter: {
-    fontSize: 24,
-    color: "#333",
-  },
-  scrambledLettersContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  letterButton: {
-    margin: 5,
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 5,
-  },
-  letter: {
-    fontSize: 18,
-    color: "#333",
-  },
-  removeButton: {
-    marginTop: 40,
-    padding: 10,
-    backgroundColor: "#ff6666",
-    borderRadius: 5,
-  },
-  removeButtonText: {
-    fontSize: 16,
-    color: "#fff",
   },
 });
 

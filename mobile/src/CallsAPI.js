@@ -2,7 +2,7 @@ import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Importar AsyncStorage
 import { useNavigation } from '@react-navigation/native';
 
-const API_URL = "http://192.168.1.2:2024";
+const API_URL = "http://192.168.1.8:2024";
 
 // Clase con los endpoints
 class ApiService {
@@ -65,6 +65,7 @@ class ApiService {
       await AsyncStorage.removeItem("userToken"); // Eliminar el token almacenado
       Alert.alert("Sesión cerrada", "Has cerrado sesión con éxito.");
       // Redirigir al login después de cerrar sesión
+      const navigation = useNavigation();
       navigation.replace('Login');  // Reemplaza la pantalla actual por Login
     } catch (error) {
       throw new Error("Error al cerrar sesión");

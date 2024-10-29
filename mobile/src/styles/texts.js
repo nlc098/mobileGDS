@@ -12,4 +12,11 @@ export const textStyles = StyleSheet.create({
     height: 0,
     width: 0,
   },
+  titleOW: {
+    fontSize: 28,
+    marginTop: 30,
+    marginBottom: 80,
+    color: "#653532",
+    fontWeight: "bold",
+  },
 });
