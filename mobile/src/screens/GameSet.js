@@ -82,10 +82,10 @@ const GameSet = () => {
         <TouchableOpacity 
           style={[
             styles.startButton, 
-            selectedCategories.length !== 3 && styles.disabledButton
+            selectedCategories.length !== 2 && styles.disabledButton
           ]} 
           onPress={handleShowSelected} 
-          disabled={selectedCategories.length !== 3}
+          disabled={selectedCategories.length !== 2}
         >
           <Text style={styles.buttonText}>Iniciar partida</Text>
         </TouchableOpacity>

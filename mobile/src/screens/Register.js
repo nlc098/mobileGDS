@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { buttonStyles } from "../styles/buttons";
 import { textStyles } from "../styles/texts";
 import { registrarse } from "../CallsAPI";
+import BackImage from '../styles/BackImage';
 import {
   StyleSheet,
   Text,
@@ -10,7 +11,7 @@ import {
   Image,
   Alert,
   ImageBackground,
-  View, // Importar View
+  View, 
 } from "react-native";
 
 const logo = require("../../assets/GDSsimplelogo.png");
@@ -78,8 +79,8 @@ export default function Register() {
   };
 
   return (
-    <ImageBackground source={fondo} resizeMode="cover" style={styles.container}>
-      <Image source={logo} resizeMode="contain" style={styles.logo} />
+    <BackImage>
+    <Image source={logo} resizeMode="contain" style={styles.logo} />
       <Text style={textStyles.title}>Registrarse</Text>
 
       <TextInput
@@ -144,10 +145,10 @@ export default function Register() {
       {errors.birthday && <Text style={styles.errorText}>{errors.birthday}</Text>}
 
       <Pressable style={buttonStyles.buttonfullwidth} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Registrarse</Text>
+        <Text style={styles.buttontext}>Registrarse</Text>
       </Pressable>
-    </ImageBackground>
-  );
+    </BackImage>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -163,13 +164,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   input: {
-    width: "100%",
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
+    backgroundColor: '#FFF',
+    borderWidth: 3,
+    borderRadius: 5,
+    borderColor: '#653532',
+    width: '100%',
+    padding: 10,
     marginBottom: 10,
-    paddingHorizontal: 10,
-    backgroundColor: "#fff",
+    fontSize: 20,
   },
   errorText: {
     color: "black",
@@ -178,20 +180,19 @@ const styles = StyleSheet.create({
     textAlign: "left",
     width: "100%",
   },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
+  buttontext: {
+    color: "#FFF",
+    fontSize: 19,
     textAlign: "center",
     fontWeight: "bold",
   },
   logo: {
     width: "90%",
     height: 200,
-    marginTop: 20,
-    marginBottom: 80,
+    marginTop: -50,
+    marginBottom: 50,
     borderRadius: 25,
   },
-  // Estilos para el contenedor de la fecha
   dateContainer: {
     flexDirection: "row",
     justifyContent: "space-between",

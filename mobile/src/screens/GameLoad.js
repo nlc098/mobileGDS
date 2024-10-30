@@ -1,4 +1,4 @@
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -21,13 +21,14 @@ const dialogbubble = require("../../assets/hint-globe.png");
 
 const InGameScreen = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { userId, parCatMod } = route.params;
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentGame, setCurrentGame] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [currentGameIndex, setCurrentGameIndex] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(50000);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,10 +38,9 @@ const InGameScreen = () => {
         return;
       }
       try {
-        const responseData = await initGame(userId, parCatMod.map(item => item.cat), parCatMod.map(item => item.mod));
-
+        const responseData = await initGame(userId,parCatMod.map(item => item.cat),parCatMod.map(item => item.mod));
         if (responseData) {
-          setData(responseData);
+          setData(responseData.gameModes);
           console.log(responseData);
         } else {
           throw new Error("No se recibieron datos de la API.");
@@ -55,56 +55,79 @@ const InGameScreen = () => {
     fetchData();
   }, [userId, parCatMod]);
 
-  const gameModes = data?.gameModes || {};
-  const gameKeys = Object.keys(gameModes);
-  const currentGameData = gameModes[gameKeys[currentGame]];
-
-  const renderGameComponent = () => {
-    if (!currentGameData) return <Text>Modo de juego no reconocido</Text>;
-
-    const gameInfo = currentGameData.infoGame[0];
-
-    switch (currentGameData.name) {
-      case 'Guess Phrase':
-        return <OrderWord OWinfo={gameInfo} />;
-      case 'Order Word':
-        return <OrderWord OWinfo={gameInfo} />;
-      case 'Order By Date':
-        return <OrderWord OWinfo={gameInfo} />;
-      default:
-        return <Text>Modo de juego no reconocido</Text>;
-    }
-  };
-
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(timer); // Detiene el cronómetro cuando llega a 0
-          return 0;
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          // Cambiar al siguiente juego
+          setCurrentGameIndex(prevIndex => {
+            const nextIndex = prevIndex + 1;
+            if (nextIndex >= Object.keys(data).length) {
+              clearInterval(timer);
+              navigation.navigate('Home');
+              return prevIndex; // No cambiar el índice si hemos terminado
+            }
+            return nextIndex; // Cambiar al siguiente juego
+          });
+          return 30; // Reiniciar el tiempo
         }
-        return prevTime - 1;
+        return prev - 1;
       });
-    }, 1000);
+    }, 1000); // Actualiza cada segundo
 
-    return () => clearInterval(timer); // Limpia el intervalo al desmontar el componente
-  }, []);
+    return () => clearInterval(timer); // Limpiar el temporizador al desmontar
+  }, [data, navigation]); // Añadir navegación como dependencia
 
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
+  const handleCorrectAnswer = () => {
+    setCurrentGameIndex(prevIndex => {
+      const nextIndex = prevIndex + 1;
+      if (nextIndex >= Object.keys(data).length) {
+        navigation.navigate('Home'); // Navegar a Home al terminar
+        return prevIndex; // No cambiar el índice si hemos terminado
+      }
+      return nextIndex; // Cambiar al siguiente juego
+    });
+  };
 
-  if (error) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>{error}</Text>
-      </View>
-    );
-  }
+  const renderGame = () => {
+    if (error) return <Text>{error}</Text>;
+    if (loading) return <ActivityIndicator size="large" color="#0000ff" />;
+
+    if (data && currentGameIndex < Object.keys(data).length) {
+      const gameKeys = Object.keys(data);
+      const currentGameKey = gameKeys[currentGameIndex];
+      const gameInfo = data[currentGameKey].infoGame[0];
+
+      if (gameInfo) {
+        const { idModeGame } = gameInfo;
+        let GameComponent;
+
+        switch (idModeGame) {
+          case 'OW':
+            GameComponent = <OrderWord OWinfo={gameInfo} onCorrect={handleCorrectAnswer} />;
+            break;
+          case 'GP':
+            GameComponent = <GuessPhrase GPinfo={gameInfo} onCorrect={handleCorrectAnswer} />;
+            break;
+          case 'OBD':
+            GameComponent = <OrderByDate infoGame={gameInfo} onCorrect={handleCorrectAnswer} />;
+            break;
+          default:
+            GameComponent = <Text>Modo de juego no reconocido.</Text>;
+        }
+
+        return (
+          <View style={styles.questionContainer}>
+            {GameComponent}
+          </View>
+        );
+      }else {
+        return <Text>Aún no fue implementado.</Text>;
+      }
+    } else {
+      return <Text>Juego terminado. Volviendo a inicio...</Text>;
+    }
+  };
 
   return (
     <ImageBackground source={fondo} style={styles.container}>
@@ -133,9 +156,7 @@ const InGameScreen = () => {
         />
         <Text style={styles.bubbleText}>¡Apurate!</Text>
       </View>
-      <View style={styles.questionContainer}>
-        {renderGameComponent()}
-      </View>
+        {renderGame()}
     </ImageBackground>
   );
 };

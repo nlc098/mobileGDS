@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { textStyles } from "../styles/texts"; 
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { textStyles } from "../styles/texts";
+import { buttonStyles } from '../styles/buttons';
 
-// Función para desordenar un array
 const shuffleArray = (array) => {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -11,125 +11,221 @@ const shuffleArray = (array) => {
   return array;
 };
 
-const OrderWord = ({ OWinfo }) => {
-  const scrambledWord = OWinfo.hint2.split(""); // Palabras desordenadas
-  const [selectedLetters, setSelectedLetters] = useState([]);
-  const [availableLetters, setAvailableLetters] = useState(shuffleArray(scrambledWord.filter(letter => letter !== " "))); // Filtrar espacios
+const OrderWord = ({ OWinfo, onCorrect }) => {
+  const { word } = OWinfo;
+  const [selectedOrder, setSelectedOrder] = useState([[]]);
+  const [shuffledWords, setShuffledWords] = useState([]);
 
-  const handleLetterPress = (letter, index) => {
-    if (selectedLetters.length < scrambledWord.length) {
-      setSelectedLetters((prev) => [...prev, letter]);
-      setAvailableLetters((prev) => prev.filter((_, i) => i !== index));
+
+  useEffect(() => {
+    const words = word.split(' ');
+    const shuffled = words.map(w => shuffleArray(w.split('')));
+    setShuffledWords(shuffled);
+  }, [word]);
+
+  const handleLetterPress = (letter, wordIndex) => {
+    const letterIndex = shuffledWords[wordIndex].findIndex(l => l === letter);
+    if (letterIndex !== -1) {
+      setSelectedOrder((prev) => {
+        const newSelected = [...prev];
+        if (!newSelected[wordIndex]) {
+          newSelected[wordIndex] = [];
+        }
+        newSelected[wordIndex].push(letter);
+        return newSelected;
+      });
+      setShuffledWords(prev => {
+        const newWords = [...prev];
+        newWords[wordIndex].splice(letterIndex, 1);
+        return newWords;
+      });
     }
   };
 
-  const handleRemoveLastLetter = () => {
-    if (selectedLetters.length > 0) {
-      const updatedLetters = [...selectedLetters];
-      const removedLetter = updatedLetters.pop();
-      setSelectedLetters(updatedLetters);
-      if (removedLetter !== " ") {
-        setAvailableLetters((prev) => [...prev, removedLetter]);
-      }
+  const handleSelectedPress = (letter, wordIndex) => {
+    setSelectedOrder((prev) => {
+      const newSelected = [...prev];
+      newSelected[wordIndex] = newSelected[wordIndex].filter(l => l !== letter);
+      return newSelected;
+    });
+    setShuffledWords(prev => {
+      const newWords = [...prev];
+      newWords[wordIndex].push(letter);
+      return newWords;
+    });
+  };
+
+  const handleVerify = () => {
+    const selectedStrings = selectedOrder.map(selected => selected.join(''));
+    const originalStrings = word.split(' ');
+
+    const isCorrect = selectedStrings.every((selectedString, index) => 
+      selectedString === originalStrings[index]
+    );
+
+    if (isCorrect) {
+      alert('¡Correcto!');
+      onCorrect(); // Llama a la función para ir al siguiente componente
+    } else {
+      alert('Incorrecto, intenta de nuevo.');
     }
+  };
+
+  const handleReset = () => {
+    setSelectedOrder([[]]);
+    const words = word.split(' ');
+    const shuffled = words.map(w => shuffleArray(w.split('')));
+    setShuffledWords(shuffled);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={textStyles.titleOW}>Encuentra la palabra...</Text>
-
-      {/* Contenedor de casilleros */}
-      <View style={styles.slotsContainer}>
-        {scrambledWord.map((letter, index) => (
-          letter === " " ? (
-            <View key={index} style={styles.lineBreak} /> // Salto de línea si es un espacio
-          ) : (
-            <View key={index} style={styles.slot}>
-              <Text style={styles.slotLetter}>
-                {selectedLetters[index] ? selectedLetters[index] : " "}
-              </Text>
+      <Text style={textStyles.title}>Ordena la palabra...</Text>
+      <View style={styles.buttonsContainer}>
+        {/* Contenedor para botones seleccionados */}
+        <View style={styles.selectedOrderContainer}>
+          {selectedOrder.map((selectedLetters = [], wordIndex) => (
+            <View key={wordIndex} style={styles.selectedOrderButtons}>
+              {selectedLetters.map((letter, index) => (
+                <TouchableOpacity 
+                  key={index} 
+                  style={styles.selectedButton} 
+                  onPress={() => handleSelectedPress(letter, wordIndex)}
+                >
+                  <Text style={styles.selectedButtonText}>{letter}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
-          )
+          ))}
+        </View>
+        {/* Contenedor para botones de letras */}
+        {shuffledWords.map((letters, wordIndex) => (
+          <View key={wordIndex} style={styles.buttonContainer}>
+            {letters.map((letter, index) => (
+              <TouchableOpacity 
+                key={index} 
+                style={styles.button} 
+                onPress={() => handleLetterPress(letter, wordIndex)}
+              >
+                <Text style={styles.buttonText}>{letter}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         ))}
       </View>
-
-      {/* Letras desordenadas */}
-      <View style={styles.scrambledLettersContainer}>
-        {availableLetters.map((letter, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => handleLetterPress(letter, index)}
-            style={styles.letterButton}
-          >
-            <Text style={styles.letter}>{letter}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Botón para remover la última letra */}
-      {selectedLetters.length > 0 && (
-        <TouchableOpacity
-          style={styles.removeButton}
-          onPress={handleRemoveLastLetter}
-        >
-          <Text style={styles.removeButtonText}>Remover letra</Text>
+      
+      <View style={styles.buttonRow}>
+        <TouchableOpacity style={styles.verifyButton} onPress={handleVerify}>
+          <Text style={styles.verifyButtonText}>Verificar</Text>
         </TouchableOpacity>
-      )}
+        <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+          <Text style={styles.resetButtonText}>Reiniciar</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: "center",
-    justifyContent: "center",
+    flex: 1,
+    justifyContent: 'start',
+    alignItems: 'center',
   },
-  slotsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap", // Para que las letras hagan salto de línea al llegar al final de la pantalla
-    justifyContent: "center",
+  instruction: {
+    fontSize: 20,
     marginBottom: 20,
   },
-  slot: {
-    borderBottomWidth: 2,
-    borderBottomColor: "#333",
-    width: 30,
-    marginHorizontal: 5,
+  buttonsContainer: {
+    alignItems: 'center', 
+    marginTop: 30,
+    marginBottom: 40,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  button: {
+    backgroundColor: '#FFFDD0', // Cambiar a un color de contraste
+    padding: 10,
+    marginTop: 40,
+    margin: 5,
+    borderRadius: 5,
+    width: '13%',
+    maxWidth: 50,
+    borderWidth: 2, // Añadir borde
+    borderColor: '#000', // Color del borde
+  },
+  buttonText: {
+    color: '#000000',
+    fontSize: 20,
+    textAlign: 'center',
+  },
+  selectedOrderContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  selectedOrderText: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  selectedOrderButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  selectedButton: {
+    backgroundColor: '#1F354A',
+    padding: 10,
+    margin: 5,
+    borderRadius: 5,
+    width: '13%',
+    maxWidth: 50,
+    borderWidth: 2, // Añadir borde
+    borderColor: '#000', // Color del borde
+  },
+  selectedButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    textAlign: 'center',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
+    marginTop: 20,
+  },
+  verifyButton: {
+    backgroundColor: "#B36F6F",
+    padding: 15,
+    borderRadius: 8,
+    borderStyle: "solid",
+    borderWidth: 2,
+    borderColor: "#653532",
+    width: "50%",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  resetButton: {
+    backgroundColor: "#B36F6F",
+    padding: 15,
+    borderRadius: 8,
+    borderStyle: "solid",
+    borderWidth: 2,
+    borderColor: "#653532",
+    width: "50%",
     alignItems: "center",
   },
-  slotLetter: {
-    fontSize: 24,
-    color: "#333",
-  },
-  scrambledLettersContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-  },
-  letterButton: {
-    margin: 5,
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 5,
-  },
-  letter: {
+  verifyButtonText: {
+    color: '#fff',
     fontSize: 18,
-    color: "#333",
+    textAlign: 'center',
   },
-  removeButton: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: "#ff6666",
-    borderRadius: 5,
-  },
-  removeButtonText: {
-    fontSize: 16,
-    color: "#fff",
-  },
-  lineBreak: {
-    width: "100%", // Hace que ocupe todo el ancho disponible para generar el salto de línea
-    height: 0,
-    marginBottom: 10,
+  resetButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    textAlign: 'center',
   },
 });
 

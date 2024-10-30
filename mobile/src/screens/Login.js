@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login } from "../CallsAPI";
 import { buttonStyles } from "../styles/buttons";
 import { textStyles } from "../styles/texts";
+import BackImage from '../styles/BackImage';
 
 const logo = require("../../assets/GDSsimplelogo.png");
 const fondo = require("../../assets/fondo_mobile.jpeg");
@@ -30,7 +31,7 @@ const Login = ({ navigation }) => {
   };
 
   return (
-    <ImageBackground source={fondo} resizeMode="cover" style={styles.container}>
+    <BackImage>
       <Image source={logo} resizeMode="contain" style={styles.logo} />
       <Text style={textStyles.title}>Login</Text>
       <TextInput
@@ -59,7 +60,7 @@ const Login = ({ navigation }) => {
           <Text style={styles.buttontext}>Registrarse</Text>
         </Pressable>
       </View>
-    </ImageBackground>
+      </BackImage>
   );
 };
 
@@ -70,22 +71,24 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   input: {
-    width: "100%",
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
+    backgroundColor: '#FFF',
+    borderWidth: 3,
+    borderRadius: 5,
+    borderColor: '#653532',
+    width: '100%',
+    padding: 10,
     marginBottom: 10,
-    paddingHorizontal: 10,
-    backgroundColor: "#fff",
+    fontSize: 20,
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "center",
     width: "100%",
+    marginTop:30,
   },
   buttontext: {
-    color: "white",
-    fontSize: 16,
+    color: "#FFF",
+    fontSize: 19,
     textAlign: "center",
     fontWeight: "bold",
   },
@@ -95,8 +98,8 @@ const styles = StyleSheet.create({
   logo: {
     width: "90%",
     height: 200,
-    marginBottom: 80,
-    marginTop: 20,
+    marginBottom: 50,
+    marginTop: -50,
     borderRadius: 25,
   },
 });

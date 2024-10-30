@@ -1,51 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 
-const OrderByDate = ({ phrases }) => {
-  const [timeLeft, setTimeLeft] = useState(40); // Inicializa el cronómetro en 40 segundos
+const OrderByDate = ({ infoGame }) => {
+    const { infoEvent } = infoGame; // Este debe ser un array de eventos que necesitas ordenar
+    const [sortedEvents, setSortedEvents] = useState([]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(timer); // Detiene el cronómetro cuando llega a 0
-          return 0;
+    const handleSortEvents = () => {
+        if (!infoEvent || infoEvent.length === 0) {
+            alert("Este juego aún no fue implementado.");
+            return;
         }
-        return prevTime - 1;
-      });
-    }, 1000);
+        // Aquí debes implementar la lógica de ordenamiento según las fechas
+        const sorted = [...infoEvent].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+        setSortedEvents(sorted);
+    };
 
-    return () => clearInterval(timer); // Limpia el intervalo al desmontar el componente
-  }, []);
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.timer}>Tiempo restante: {timeLeft} segundos</Text> {/* Cronómetro en la parte superior */}
-      {phrases.map((phrase, index) => (
-        <Text key={index} style={styles.phrase}>{phrase}</Text>
-      ))}
-      <Button title="Verificar Orden" onPress={() => { /* Lógica para verificar el orden */ }} />
-    </View>
-  );
+    return (
+        <View style={styles.container}>
+            <Text style={styles.title}>Ordena los eventos por fecha:</Text>
+            <Button title="Ordenar Eventos" onPress={handleSortEvents} />
+            {sortedEvents.length > 0 ? (
+                sortedEvents.map((event, index) => (
+                    <Text key={index} style={styles.event}>{event.event}</Text>
+                ))
+            ) : (
+                <Text>No hay eventos para mostrar.</Text>
+            )}
+        </View>
+    );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  timer: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: 'red',
-  },
-  phrase: {
-    fontSize: 18,
-    marginBottom: 10,
-  },
+    container: {
+        padding: 20,
+        alignItems: 'center',
+    },
+    title: {
+        fontSize: 20,
+        marginBottom: 10,
+    },
+    event: {
+        fontSize: 16,
+        marginVertical: 5,
+    },
 });
 
 export default OrderByDate;

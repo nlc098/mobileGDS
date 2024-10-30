@@ -54,7 +54,7 @@ const SlotMachine = ({ items }) => {
           // Esperar 10 segundos antes de navegar
           setTimeout(() => {
             logResults(newResults, categoriesWithGameModes);
-          }, 4000); // 10 segundos
+          }, 1000);
         }
       });
     };

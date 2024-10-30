@@ -4,7 +4,7 @@ import HeaderMain from '../components/HeaderMain';
 import FooterButtons from '../components/FooterButtons';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import {getUserByUsername } from '../CallsAPI';
+import { getUserByUsername } from '../CallsAPI';
 
 const User = () => {
   const [user, setUser] = useState({

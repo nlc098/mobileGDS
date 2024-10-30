@@ -1,62 +1,96 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { buttonStyles } from '../styles/buttons';
 
-const GuessPhrase = ({ phrase, missingWord }) => {
-  const [userGuess, setUserGuess] = useState('');
-  const [timeLeft, setTimeLeft] = useState(30); // Inicializa el cronómetro en 40 segundos
+const GuessPhrase = ({ GPinfo, onCorrect }) => {
+    const { phrase, correct_word } = GPinfo;
+    const [userInput, setUserInput] = useState('');
+    const [resultMessage, setResultMessage] = useState('');
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(timer); // Detiene el cronómetro cuando llega a 0
-          return 0;
+    const handleCheckAnswer = () => {
+        if (correct_word === null) {
+            setResultMessage("Este juego aún no fue implementado.");
+        } else {
+            const isCorrect = userInput.trim().toLowerCase() === correct_word.toLowerCase();
+            setResultMessage(isCorrect ? "¡Correcto!" : "Incorrecto. Intenta de nuevo.");
+            if(isCorrect){
+              onCorrect();
+            }
         }
-        return prevTime - 1;
-      });
-    }, 1000);
+    };
 
-    return () => clearInterval(timer); // Limpia el intervalo al desmontar el componente
-  }, []);
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.timer}>Tiempo restante: {timeLeft} segundos</Text> {/* Cronómetro en la parte superior */}
-      <Text style={styles.phrase}>{phrase.replace('___', '____')}</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Ingresa la palabra faltante"
-        value={userGuess}
-        onChangeText={setUserGuess}
-      />
-      <Button title="Verificar" onPress={() => { /* Lógica para verificar la palabra */ }} />
-    </View>
-  );
+    return (
+        <View style={styles.container}>
+            <View style={styles.containerPhrase}>
+              {phrase ? (
+                  <Text style={styles.phrase}>{phrase}</Text>
+              ) : (
+                  <Text>Este juego aún no fue implementado.</Text>
+              )}
+            </View>
+            <TextInput 
+                style={styles.input}
+                value={userInput}
+                onChangeText={setUserInput}
+                placeholder="Escribe tu respuesta"
+            />
+            {resultMessage && <Text style={styles.resultMessage}>{resultMessage}</Text>}
+            <TouchableOpacity style={styles.verifyButton} onPress={handleCheckAnswer}>
+              <Text style={styles.verifyButtonText}>Verificar</Text>
+            </TouchableOpacity>
+        </View>
+    );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  timer: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: 'red',
-  },
-  phrase: {
-    fontSize: 20,
-    marginBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    padding: 10,
-    width: '80%',
-    marginBottom: 20,
-  },
+    container: {
+        alignItems: 'center',
+        justifyContent: 'start',
+    },
+    title: {
+        fontSize: 20,
+        marginBottom: 10,
+    },
+    phrase: {
+        fontSize: 24,
+        fontWeight: 'bold',
+    },
+    input: {
+      backgroundColor: '#FFF',
+        borderWidth: 3,
+        borderColor: '#653532',
+        width: 300,
+        padding: 10,
+        marginBottom: 10,
+        fontSize: 20,
+    },
+    verifyButton: {
+      backgroundColor: "#B36F6F",
+      padding: 15,
+      borderRadius: 8,
+      borderStyle: "solid",
+      borderWidth: 2,
+      borderColor: "#653532",
+      alignItems: "center",
+    },
+    verifyButtonText: {
+      color: '#fff',
+      fontSize: 18,
+      textAlign: 'center',
+    },
+    resultMessage: {
+      marginBottom: 50,
+      fontSize: 15,
+    },
+    containerPhrase: {
+      backgroundColor: '#FFF',
+      padding: 10,
+      borderRadius: 8,
+      borderWidth: 3,
+      borderColor: "#653532",
+      width: 300,
+      marginBottom: 50,
+    },
 });
 
 export default GuessPhrase;
