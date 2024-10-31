@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { textStyles } from "../styles/texts";
-import { buttonStyles } from '../styles/buttons';
 
 const shuffleArray = (array) => {
   for (let i = array.length - 1; i > 0; i--) {
@@ -64,10 +63,8 @@ const OrderWord = ({ OWinfo, onCorrect }) => {
     );
 
     if (isCorrect) {
-      alert('¡Correcto!');
-      onCorrect(); // Llama a la función para ir al siguiente componente
+      onCorrect();
     } else {
-      alert('Incorrecto, intenta de nuevo.');
     }
   };
 

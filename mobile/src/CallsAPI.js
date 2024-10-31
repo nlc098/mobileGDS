@@ -2,7 +2,7 @@ import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Importar AsyncStorage
 import { useNavigation } from '@react-navigation/native';
 
-const API_URL = "http://192.168.0.101:2024";
+const API_URL = "http://192.168.1.8:2024";
 
 // Clase con los endpoints
 class ApiService {

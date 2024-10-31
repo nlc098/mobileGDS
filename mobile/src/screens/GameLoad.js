@@ -12,7 +12,8 @@ import {
   StyleSheet,
   ImageBackground,
   Image,
-  ActivityIndicator
+  ActivityIndicator,
+  TouchableOpacity
 } from "react-native";
 
 const brainDialog = require("../../assets/idle_brain.png");
@@ -28,7 +29,12 @@ const InGameScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(50000);
+  const [timeLeft, setTimeLeft] = useState(15);
+
+  const [hints, setHints] = useState([]);
+  const [currentHintIndex, setCurrentHintIndex] = useState(0);
+  const [hintCounter, setHintCounter] = useState(3);
+  const [hintButtonEnabled, setHintButtonEnabled] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,12 +70,12 @@ const InGameScreen = () => {
             const nextIndex = prevIndex + 1;
             if (nextIndex >= Object.keys(data).length) {
               clearInterval(timer);
-              navigation.navigate('Home');
               return prevIndex; // No cambiar el índice si hemos terminado
             }
+            setHints([]); // Se reinician las pistas
             return nextIndex; // Cambiar al siguiente juego
           });
-          return 30; // Reiniciar el tiempo
+          return 15; // Reiniciar el tiempo
         }
         return prev - 1;
       });
@@ -79,15 +85,59 @@ const InGameScreen = () => {
   }, [data, navigation]); // Añadir navegación como dependencia
 
   const handleCorrectAnswer = () => {
-    setCurrentGameIndex(prevIndex => {
-      const nextIndex = prevIndex + 1;
-      if (nextIndex >= Object.keys(data).length) {
-        navigation.navigate('Home'); // Navegar a Home al terminar
-        return prevIndex; // No cambiar el índice si hemos terminado
-      }
-      return nextIndex; // Cambiar al siguiente juego
-    });
+    
   };
+
+  const showNextHint = () => {
+    if (data && currentGameIndex < Object.keys(data).length && hintButtonEnabled) {
+      const gameKeys = Object.keys(data);
+      const currentGameKey = gameKeys[currentGameIndex];
+      const gameInfo = data[currentGameKey].infoGame[0]; // Asignamos de nuevo después de vaciar
+
+      const { idModeGame } = gameInfo;
+            
+      switch (idModeGame) {
+        case 'OW':
+        case 'GP':
+        case 'OBD':
+          setHints([gameInfo.hint1, gameInfo.hint2, gameInfo.hint3]);
+          break;
+        default:
+      }
+      // Actualiza el índice de la pista
+      setCurrentHintIndex((prevIndex) => {
+        if (prevIndex < hints.length - 1) {
+          return prevIndex + 1;
+        }
+        return prevIndex;
+      });
+
+      // Actualiza el contador de pistas
+      setHintCounter((prevCounter) => {
+        if (prevCounter > 1) {
+          return prevCounter - 1;
+        } else {
+          setHintButtonEnabled(false); // Desactiva el botón al llegar a cero
+          return 0;
+        }
+      });
+    }
+  };
+
+  const hintButton = () => (
+    <TouchableOpacity
+      style={[
+        styles.hintButton,
+        !hintButtonEnabled && styles.disabledButton,
+      ]}
+      onPress={showNextHint}
+      disabled={!hintButtonEnabled}
+    >
+      <Ionicons name="help-outline" size={50} color={hintButtonEnabled ? "#653532" : "gray"} />
+      <Text style={styles.counterText}>{hintButtonEnabled ? hintCounter : 0}</Text>
+    </TouchableOpacity>
+  );
+
 
   const renderGame = () => {
     if (error) return <Text>{error}</Text>;
@@ -133,13 +183,16 @@ const InGameScreen = () => {
     <ImageBackground source={fondo} style={styles.container}>
       <View style={styles.topRow}>
         <Ionicons name="person-circle-outline" size={60} color="black" />
-        <AntDesign name="questioncircle" size={60} color="black" />
+        <AntDesign name="questioncircle" size={50} color="black" />
         <Ionicons name="person-circle-outline" size={60} color="black" />
       </View>
 
       <View style={styles.timerContainer}>
-        <Text style={styles.timerText}>{timeLeft}</Text>
+        <View style={styles.circle}>
+          <Text style={styles.timerText}>{timeLeft}</Text>
+        </View>
       </View>
+
 
       <View style={styles.brainContainer}>
         <Image
@@ -154,9 +207,16 @@ const InGameScreen = () => {
           resizeMode="contain"
           style={styles.speechBubble}
         />
-        <Text style={styles.bubbleText}>¡Apurate!</Text>
+        <View style={styles.textContainer}>
+          {hints.length > 0 ? (
+            <Text style={styles.bubbleText}>{hints[currentHintIndex]}</Text>
+          ) : (
+            <Text style={styles.bubbleText}>¡Apurate!</Text>
+          )}
+        </View>
       </View>
-        {renderGame()}
+      {hintButton()}
+      {renderGame()}
     </ImageBackground>
   );
 };
@@ -178,13 +238,22 @@ const styles = StyleSheet.create({
   },
   timerContainer: {
     position: "absolute",
-    top: 150,
-    right: 70,
+    top: 130,
+    right: 40,
     justifyContent: "center",
     alignItems: "center",
   },
+  circle: {
+    width: 70, 
+    height: 70, 
+    borderRadius: 40, 
+    borderWidth: 2, 
+    borderColor: "black", 
+    justifyContent: "center", 
+    alignItems: "center", 
+  },
   timerText: {
-    fontSize: 40,
+    fontSize: 36,
     fontWeight: "bold",
     color: "black",
   },
@@ -204,20 +273,30 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 100,
     right: 200,
+    alignItems: "center",
+    justifyContent: "center",
   },
   speechBubble: {
     width: 140,
     height: 140,
   },
+  textContainer: {
+    position: "absolute",
+    top: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 5,
+    alignItems: "center",
+  },
   bubbleText: {
     color: "#333",
-    fontSize: 14,
+    fontSize: 16,
     textAlign: "center",
-    justifyContent: "center",
-    bottom: 90,
+    numberOfLines: 2,
+    ellipsizeMode: "tail", // Mostrar elipsis si desborda
   },
   questionContainer: {
-    marginTop: 200,
+    marginTop: 230,
     width: "90%",
     height: 500,
     backgroundColor: "#F9F5DC",
@@ -227,7 +306,6 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderWidth: 2,
     borderColor: "#653532",
-    alignItems: "center",
   },
   questionText: {
     fontSize: 22,
@@ -235,6 +313,29 @@ const styles = StyleSheet.create({
     color: "#333",
     marginTop: 20,
     marginBottom: 60,
+  },
+  hintButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#FFF",
+    borderWidth: 2,
+    borderColor: "#653532", 
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
+    top: 250,
+    right: 40,
+  },
+  disabledButton: {
+    backgroundColor: "#f0f0f0", // Color de fondo deshabilitado
+    borderColor: "#ccc", // Color del contorno deshabilitado
+  },
+  counterText: {
+    position: "absolute",
+    top: 55,
+    fontSize: 16,
+    color: "black",
   },
 });
 
