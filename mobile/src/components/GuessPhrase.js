@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { buttonStyles } from '../styles/buttons';
 
 const GuessPhrase = ({ GPinfo, onCorrect }) => {
     const { phrase, correct_word } = GPinfo;

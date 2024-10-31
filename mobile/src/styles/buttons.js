@@ -19,7 +19,7 @@ export const buttonStyles = StyleSheet.create({
     borderStyle: "solid",
     borderWidth: 2,
     borderColor: "#653532",
-    width: "40%",
+    width: "45%",
     alignItems: "center",
     marginBottom: 40,
   },

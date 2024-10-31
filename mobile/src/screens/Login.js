@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   spacer: {
-    width: 50,
+    width: 30,
   },
   logo: {
     width: "90%",

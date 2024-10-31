@@ -2,7 +2,7 @@ import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Importar AsyncStorage
 import { useNavigation } from '@react-navigation/native';
 
-const API_URL = "http://192.168.1.8:2024";
+const API_URL = "http://192.168.1.8:8080";
 
 // Clase con los endpoints
 class ApiService {
@@ -112,7 +112,7 @@ class ApiService {
         throw new Error("Token no encontrado");
       }
   
-      const response = await fetch(`${API_URL}/category/api/user`, {
+      const response = await fetch(`${API_URL}/auth/activeCategories`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

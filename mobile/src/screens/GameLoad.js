@@ -29,7 +29,7 @@ const InGameScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [timeLeft, setTimeLeft] = useState(10);
 
   const [hints, setHints] = useState([]);
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
@@ -44,7 +44,7 @@ const InGameScreen = () => {
         return;
       }
       try {
-        const responseData = await initGame(userId,parCatMod.map(item => item.cat),parCatMod.map(item => item.mod));
+        const responseData = await initGame(userId, parCatMod.map(item => item.cat),parCatMod.map(item => item.mod));
         if (responseData) {
           setData(responseData.gameModes);
           console.log(responseData);
@@ -75,7 +75,7 @@ const InGameScreen = () => {
             setHints([]); // Se reinician las pistas
             return nextIndex; // Cambiar al siguiente juego
           });
-          return 15; // Reiniciar el tiempo
+          return 10; // Reiniciar el tiempo
         }
         return prev - 1;
       });
@@ -85,7 +85,13 @@ const InGameScreen = () => {
   }, [data, navigation]); // Añadir navegación como dependencia
 
   const handleCorrectAnswer = () => {
-    
+    setCurrentGameIndex(prevIndex => {
+      const nextIndex = prevIndex + 1;
+      if (nextIndex >= Object.keys(data).length) {
+        return prevIndex; // No cambiar el índice si hemos terminado
+      }
+      return nextIndex; // Cambiar al siguiente juego
+    });
   };
 
   const showNextHint = () => {
