@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
 const GuessPhrase = ({ GPinfo, onCorrect }) => {
@@ -17,6 +17,10 @@ const GuessPhrase = ({ GPinfo, onCorrect }) => {
             }
         }
     };
+
+    useEffect(() => {
+      setUserInput('');
+    }, [phrase]);
 
     return (
         <View style={styles.container}>

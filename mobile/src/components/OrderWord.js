@@ -20,6 +20,7 @@ const OrderWord = ({ OWinfo, onCorrect }) => {
     const words = word.split(' ');
     const shuffled = words.map(w => shuffleArray(w.split('')));
     setShuffledWords(shuffled);
+    setSelectedOrder([]);
   }, [word]);
 
   const handleLetterPress = (letter, wordIndex) => {

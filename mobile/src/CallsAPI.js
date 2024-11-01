@@ -1,14 +1,13 @@
 import { Alert } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Importar AsyncStorage
-import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.1.8:8080";
+const API_URL = "http://192.168.1.9:8080/api";
 
 // Clase con los endpoints
 class ApiService {
   async login(username, password) {
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`${API_URL}/v1/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -38,7 +37,7 @@ class ApiService {
       const defaultImageUrl = "https://w7.pngwing.com/pngs/717/24/png-transparent-computer-icons-user-profile-user-account-avatar-heroes-silhouette-black-thumbnail.png"; // Asegúrate de que esta URL sea accesible
       const imageUrl = profileImageUrl || defaultImageUrl;
 
-      const response = await fetch(`${API_URL}/auth/register`, {
+      const response = await fetch(`${API_URL}/v1/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -86,7 +85,7 @@ class ApiService {
         throw new Error("Token no encontrado");
       }
   
-      const response = await fetch(`${API_URL}/api/admin/${username}`, {
+      const response = await fetch(`${API_URL}/users/v1/${username}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -112,7 +111,7 @@ class ApiService {
         throw new Error("Token no encontrado");
       }
   
-      const response = await fetch(`${API_URL}/auth/activeCategories`, {
+      const response = await fetch(`${API_URL}/v1/categories-active`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -139,7 +138,7 @@ class ApiService {
       if (!token) {
         throw new Error("Token no encontrado");
       }
-      const response = await fetch(`${API_URL}/api/user/game/loadGame`, {
+      const response = await fetch(`${API_URL}/game-single/v1/load-game`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -170,7 +169,7 @@ class ApiService {
       if (!token) {
         throw new Error("Token no encontrado");
       }
-      const response = await fetch(`${API_URL}/api/user/game/initGame`, {
+      const response = await fetch(`${API_URL}/game-single/v1/init-game`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -198,6 +197,10 @@ class ApiService {
 }
 
 const apiService = new ApiService();
+
+
+
+
 
 // Se hacen endpoints exportables a otros archivos
 export const login = async (username, password) => {
