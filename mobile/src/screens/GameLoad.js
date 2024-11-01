@@ -88,6 +88,7 @@ const InGameScreen = () => {
     setCurrentGameIndex(prevIndex => {
       const nextIndex = prevIndex + 1;
       if (nextIndex >= Object.keys(data).length) {
+        //navigation.navigate('Home'); // Navegar a Home al terminar
         return prevIndex; // No cambiar el índice si hemos terminado
       }
       return nextIndex; // Cambiar al siguiente juego
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
     color: "#333",
     fontSize: 16,
     textAlign: "center",
-    numberOfLines: 2,
+    numberOfLines: 3,
     ellipsizeMode: "tail", // Mostrar elipsis si desborda
   },
   questionContainer: {

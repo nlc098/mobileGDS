@@ -1,8 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Importar AsyncStorage
-import { useNavigation } from '@react-navigation/native';
 
-const API_URL = "http://192.168.1.8:8080";
+const API_URL = "http://192.168.0.100:8080";
 
 // Clase con los endpoints
 class ApiService {
@@ -23,7 +22,6 @@ class ApiService {
 
       const data = await response.json();
 
-      // Guardar el token en AsyncStorage
       await AsyncStorage.setItem("userToken", data.token);
 
       return data;
