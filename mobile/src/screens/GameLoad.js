@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { initGame } from '../CallsAPI';
-import OrderByDate from '../components/OrderByDate';
+import MultipleChoice from '../components/MultipleChoice';
 import OrderWord from '../components/OrderWord';
 import GuessPhrase from '../components/GuessPhrase';
 import {
@@ -88,6 +88,7 @@ const InGameScreen = () => {
     setCurrentGameIndex(prevIndex => {
       const nextIndex = prevIndex + 1;
       if (nextIndex >= Object.keys(data).length) {
+        //navigation.navigate('Home'); // Navegar a Home al terminar
         return prevIndex; // No cambiar el índice si hemos terminado
       }
       return nextIndex; // Cambiar al siguiente juego
@@ -105,7 +106,7 @@ const InGameScreen = () => {
       switch (idModeGame) {
         case 'OW':
         case 'GP':
-        case 'OBD':
+        case 'MC':
           setHints([gameInfo.hint1, gameInfo.hint2, gameInfo.hint3]);
           break;
         default:
@@ -165,8 +166,8 @@ const InGameScreen = () => {
           case 'GP':
             GameComponent = <GuessPhrase GPinfo={gameInfo} onCorrect={handleCorrectAnswer} />;
             break;
-          case 'OBD':
-            GameComponent = <OrderByDate infoGame={gameInfo} onCorrect={handleCorrectAnswer} />;
+          case 'MC':
+            GameComponent = <MultipleChoice MOinfo={gameInfo}/>;
             break;
           default:
             GameComponent = <Text>Modo de juego no reconocido.</Text>;
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
     color: "#333",
     fontSize: 16,
     textAlign: "center",
-    numberOfLines: 2,
+    numberOfLines: 3,
     ellipsizeMode: "tail", // Mostrar elipsis si desborda
   },
   questionContainer: {

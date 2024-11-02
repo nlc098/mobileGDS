@@ -1,10 +1,14 @@
-import React, { useState, useEffect  } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
 const GuessPhrase = ({ GPinfo, onCorrect }) => {
     const { phrase, correct_word } = GPinfo;
     const [userInput, setUserInput] = useState('');
     const [resultMessage, setResultMessage] = useState('');
+
+    useEffect(() => {
+      setUserInput('');
+    }, [GPinfo]);
 
     const handleCheckAnswer = () => {
         if (correct_word === null) {

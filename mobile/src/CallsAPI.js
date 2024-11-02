@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_URL = "http://192.168.1.9:8080/api";
 
+
 // Clase con los endpoints
 class ApiService {
   async login(username, password) {
@@ -22,7 +23,6 @@ class ApiService {
 
       const data = await response.json();
 
-      // Guardar el token en AsyncStorage
       await AsyncStorage.setItem("userToken", data.token);
 
       return data;
