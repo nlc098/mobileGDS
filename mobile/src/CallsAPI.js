@@ -1,8 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.1.9:8080/api";
-
+const API_URL = "http://192.168.0.103:8080/api";
 
 // Clase con los endpoints
 class ApiService {
@@ -57,14 +56,30 @@ class ApiService {
     }
   }
 
-  // Método para cerrar sesión (borrar el token)
-  async logout() {
-    try {
-      await AsyncStorage.removeItem("userToken"); // Eliminar el token almacenado
-    } catch (error) {
-      throw new Error("Error al cerrar sesión");
+// Método para cerrar sesión (borrar el token)
+async logout(username) {
+  try {
+    const token = await this.getToken(); 
+    if (!token) {
+      throw new Error("Token no encontrado");
     }
+    const response = await fetch(`${API_URL}/v1/logout/${username}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Error al cerrar sesión en el servidor");
+    }
+
+    await AsyncStorage.removeItem("userToken"); // Eliminar el token almacenado
+  } catch (error) {
+    console.error(error.message);
+    throw new Error("Error al cerrar sesión");
   }
+}
 
   // Método para obtener el token
   async getToken() {
@@ -194,13 +209,65 @@ class ApiService {
       console.error(error.message);
     }
   }
+
+  // Setea horario de inicio de partida
+  async initPlayGame(idGameSingle) {
+    try {
+      const token = await this.getToken(); // Obtener el token del usuario
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+      const response = await fetch(`${API_URL}/game-single/v1/init-play-game/${idGameSingle}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al cargar el juego");
+      }
+      const data = await response.json();
+      return data; 
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
+
+  async sendAnswer(idGameSingle, userId, answer, gameId, time) {
+    try {
+      const token = await this.getToken(); // Obtener el token del usuario
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+      const response = await fetch(`${API_URL}/game-single/v1/init-play-game/${idGameSingle}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            idGameSingle: idGameSingle,
+            idUser: userId,
+            response: answer,
+            idGame: gameId,
+            time_playing: time
+          }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al enviar la respuesta");
+      }
+      const data = await response.json();
+      return data; 
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
 }
 
 const apiService = new ApiService();
-
-
-
-
 
 // Se hacen endpoints exportables a otros archivos
 export const login = async (username, password) => {
@@ -223,12 +290,8 @@ export const registrarse = async (username, email, password, birthday, country, 
   }
 };
 
-export const logout = async () => {
-  try {
-    await apiService.logout();
-  } catch (error) {
-    console.log("Error", error.message);
-  }
+export const logout = async (username) => {
+    await apiService.logout(username);
 };
 
 export const getToken = async () => {
@@ -286,3 +349,25 @@ export const initGame = async (userId, categories, modeGames) => {
     return null;
   }
 };
+
+export const initPlayGame = async (idGameSingle) => {
+  try {
+    const data = await apiService.initPlayGame(idGameSingle);
+    return data;
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+};
+
+export const sendAnswer = async (idGameSingle, userId, answer, gameId, time) => {
+  try {
+    const data = await apiService.sendAnswer(idGameSingle, userId, answer, gameId, time);
+    return data;
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+};
+
+

@@ -2,7 +2,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { initGame } from '../CallsAPI';
+import { initGame, initPlayGame } from '../CallsAPI';
 import MultipleChoice from '../components/MultipleChoice';
 import OrderWord from '../components/OrderWord';
 import GuessPhrase from '../components/GuessPhrase';
@@ -26,6 +26,7 @@ const InGameScreen = () => {
   const { userId, parCatMod } = route.params;
 
   const [data, setData] = useState(null);
+  const [init, setInit] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
@@ -47,7 +48,13 @@ const InGameScreen = () => {
         const responseData = await initGame(userId, parCatMod.map(item => item.cat),parCatMod.map(item => item.mod));
         if (responseData) {
           setData(responseData.gameModes);
-          console.log(responseData);
+          
+          const idGameSingle = await initPlayGame(responseData.idGameSingle)
+          if(idGameSingle != null){
+           
+          }else {
+            console.error("Error: idGameSingle es null o indefinido.");
+          }
         } else {
           throw new Error("No se recibieron datos de la API.");
         }

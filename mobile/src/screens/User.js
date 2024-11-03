@@ -3,6 +3,7 @@ import { Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { buttonStyles } from "../styles/buttons";
 import { logout } from '../CallsAPI';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import MainMenu from "../components/MainMenu";
 
 const User = () => {
@@ -11,8 +12,9 @@ const User = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
-      navigation.replace('Login');
+      const username = await AsyncStorage.getItem("username");
+      await logout(username);
+      navigation.navigate('Login');
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     }
