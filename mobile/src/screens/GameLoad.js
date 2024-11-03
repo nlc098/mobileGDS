@@ -1,11 +1,12 @@
 import { useRoute, useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { initGame, initPlayGame } from '../CallsAPI';
+import { initGame, initPlayGame, sendAnswer } from '../CallsAPI';
 import MultipleChoice from '../components/MultipleChoice';
 import OrderWord from '../components/OrderWord';
 import GuessPhrase from '../components/GuessPhrase';
+import { GameContext } from "../context/GameContext";
 import {
   View,
   Text,
@@ -25,8 +26,10 @@ const InGameScreen = () => {
   const navigation = useNavigation();
   const { userId, parCatMod } = route.params;
 
+  const { answer } = useContext(GameContext);
+  const [answerData, setAnswerData] = useState([]);
+
   const [data, setData] = useState(null);
-  const [init, setInit] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
@@ -47,8 +50,9 @@ const InGameScreen = () => {
       try {
         const responseData = await initGame(userId, parCatMod.map(item => item.cat),parCatMod.map(item => item.mod));
         if (responseData) {
-          setData(responseData.gameModes);
-          
+          const gameModes = responseData.gameModes;
+          setData(gameModes);
+          setAnswerData(responseData);
           const idGameSingle = await initPlayGame(responseData.idGameSingle)
           if(idGameSingle != null){
            
@@ -67,6 +71,34 @@ const InGameScreen = () => {
 
     fetchData();
   }, [userId, parCatMod]);
+
+  const sendAnswerData = async () => {
+    try {
+      const gameKeys = Object.keys(data);
+      const currentGameKey = gameKeys[currentGameIndex];
+      const gameInfo = data[currentGameKey].infoGame[0];
+      const { id } = gameInfo;
+      console.log(answer);
+      console.log(id);
+      const responseData = await sendAnswer(answerData.idGameSingle, userId, answer, id, 21.5);
+      if (responseData == true) {
+        setCurrentGameIndex(prevIndex => {
+          const nextIndex = prevIndex + 1;
+          if (nextIndex >= Object.keys(data).length) {
+            //navigation.navigate('Home'); // Navegar a Home al terminar
+            return prevIndex; // No cambiar el índice si hemos terminado
+          }
+          return nextIndex; // Cambiar al siguiente juego
+        });
+      } else if(responseData == false){
+        
+      }else{
+        throw new Error("No se recibieron datos de la API.");
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -90,17 +122,6 @@ const InGameScreen = () => {
 
     return () => clearInterval(timer); // Limpiar el temporizador al desmontar
   }, [data, navigation]); // Añadir navegación como dependencia
-
-  const handleCorrectAnswer = () => {
-    setCurrentGameIndex(prevIndex => {
-      const nextIndex = prevIndex + 1;
-      if (nextIndex >= Object.keys(data).length) {
-        //navigation.navigate('Home'); // Navegar a Home al terminar
-        return prevIndex; // No cambiar el índice si hemos terminado
-      }
-      return nextIndex; // Cambiar al siguiente juego
-    });
-  };
 
   const showNextHint = () => {
     if (data && currentGameIndex < Object.keys(data).length && hintButtonEnabled) {
@@ -168,13 +189,13 @@ const InGameScreen = () => {
 
         switch (idModeGame) {
           case 'OW':
-            GameComponent = <OrderWord OWinfo={gameInfo} onCorrect={handleCorrectAnswer} />;
+            GameComponent = <OrderWord OWinfo={gameInfo} veryfyAnswer={sendAnswerData} />;
             break;
           case 'GP':
-            GameComponent = <GuessPhrase GPinfo={gameInfo} onCorrect={handleCorrectAnswer} />;
+            GameComponent = <GuessPhrase GPinfo={gameInfo} veryfyAnswer={sendAnswerData}/>;
             break;
           case 'MC':
-            GameComponent = <MultipleChoice MOinfo={gameInfo}/>;
+            GameComponent = <MultipleChoice MOinfo={gameInfo} veryfyAnswer={sendAnswerData}/>;
             break;
           default:
             GameComponent = <Text>Modo de juego no reconocido.</Text>;

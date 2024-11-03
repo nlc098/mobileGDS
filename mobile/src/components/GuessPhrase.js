@@ -1,30 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { GameContext } from "../context/GameContext";
 
-const GuessPhrase = ({ GPinfo, onCorrect }) => {
+const GuessPhrase = ({ GPinfo, veryfyAnswer }) => {
+    const { setAnswer } = useContext(GameContext);
     const { phrase, correct_word } = GPinfo;
     const [userInput, setUserInput] = useState('');
     const [resultMessage, setResultMessage] = useState('');
 
     useEffect(() => {
       setUserInput('');
+      setAnswer('');
     }, [GPinfo]);
 
     const handleCheckAnswer = () => {
-        if (correct_word === null) {
-            setResultMessage("Este juego aún no fue implementado.");
-        } else {
-            const isCorrect = userInput.trim().toLowerCase() === correct_word.toLowerCase();
-            setResultMessage(isCorrect ? "¡Correcto!" : "Incorrecto. Intenta de nuevo.");
-            if(isCorrect){
-              onCorrect();
-            }
-        }
+      if (correct_word === null) {
+          setResultMessage("Este juego aún no fue implementado.");
+      } else {
+        setAnswer(userInput.trim().toUpperCase());
+        veryfyAnswer();
+        // const isCorrect = userInput.trim().toLowerCase() === correct_word.toLowerCase();
+        // setResultMessage(isCorrect ? "¡Correcto!" : "Incorrecto. Intenta de nuevo.");
+        // if(isCorrect){
+        //   onCorrect();
+        // }
+      }
     };
 
-    useEffect(() => {
-      setUserInput('');
-    }, [phrase]);
+    // useEffect(() => {
+    //   setUserInput('');
+    // }, [phrase]);
 
     return (
         <View style={styles.container}>

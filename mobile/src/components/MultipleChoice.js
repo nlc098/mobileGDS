@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useContext  } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { GameContext } from "../context/GameContext";
 
-const MultipleChoice = ({ MOinfo }) => {
+const MultipleChoice = ({ MOinfo, veryfyAnswer }) => {
+  const { setAnswer } = useContext(GameContext);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [confirmedAnswer, setConfirmedAnswer] = useState(null);
 
@@ -13,6 +15,10 @@ const MultipleChoice = ({ MOinfo }) => {
     randomWord3,
   } = MOinfo;
 
+  useEffect(() => {
+    setAnswer('');
+  }, [MOinfo]);
+
   const allOptions = [randomCorrectWord, randomWord1, randomWord2, randomWord3];
 
   const handleAnswerSelection = (option) => {
@@ -21,6 +27,8 @@ const MultipleChoice = ({ MOinfo }) => {
 
   const confirmAnswer = () => {
     if (selectedAnswer) {
+      setAnswer(selectedAnswer);
+      veryfyAnswer();
       setConfirmedAnswer(selectedAnswer);
     }
   };

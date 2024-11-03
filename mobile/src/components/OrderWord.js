@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { textStyles } from "../styles/texts";
+import { GameContext } from "../context/GameContext";
 
 const shuffleArray = (array) => {
   for (let i = array.length - 1; i > 0; i--) {
@@ -10,8 +11,8 @@ const shuffleArray = (array) => {
   return array;
 };
 
-const OrderWord = ({ OWinfo, onCorrect }) => {
-  
+const OrderWord = ({ OWinfo, veryfyAnswer }) => {
+  const { setAnswer } = useContext(GameContext);
   const { word } = OWinfo;
   const [selectedOrder, setSelectedOrder] = useState([[]]);
   const [shuffledWords, setShuffledWords] = useState([]);
@@ -23,6 +24,7 @@ const OrderWord = ({ OWinfo, onCorrect }) => {
     setShuffledWords(shuffled);
 
     setSelectedOrder([[]]);
+    setAnswer('');
   }, [OWinfo]);
 
   const handleLetterPress = (letter, wordIndex) => {
@@ -59,17 +61,18 @@ const OrderWord = ({ OWinfo, onCorrect }) => {
 
   const handleVerify = () => {
     const selectedStrings = selectedOrder.map(selected => selected.join(''));
-    const originalStrings = word.split(' ');
+    setAnswer(selectedStrings);
+    veryfyAnswer();
 
-    const isCorrect = selectedStrings.every((selectedString, index) => 
-      selectedString === originalStrings[index]
-    );
+    // const originalStrings = word.split(' ');
 
-    if (isCorrect) {
-      onCorrect();
-    } else {
-    }
-  };
+    // const isCorrect = selectedStrings.every((selectedString, index) => 
+    //   selectedString === originalStrings[index]
+    // );
+    // if (isCorrect) {
+    //   onCorrect();
+    // }
+    };
 
   const handleReset = () => {
     setSelectedOrder([[]]);

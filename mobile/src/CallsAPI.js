@@ -241,7 +241,7 @@ async logout(username) {
       if (!token) {
         throw new Error("Token no encontrado");
       }
-      const response = await fetch(`${API_URL}/game-single/v1/init-play-game/${idGameSingle}`, {
+      const response = await fetch(`${API_URL}/game-single/v1/play-game`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -257,7 +257,7 @@ async logout(username) {
       });
 
       if (!response.ok) {
-        throw new Error("Error al enviar la respuesta");
+        throw new Error("Error al recibit la respuesta");
       }
       const data = await response.json();
       return data; 
@@ -369,5 +369,3 @@ export const sendAnswer = async (idGameSingle, userId, answer, gameId, time) => 
     return null;
   }
 };
-
-
