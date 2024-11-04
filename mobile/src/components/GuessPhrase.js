@@ -17,14 +17,14 @@ const GuessPhrase = ({ GPinfo, onCorrect, veryfyAnswer }) => {
         setResultMessage("Este juego aún no fue implementado.");
         return;
     }
-    const isCorrect = userInput.trim().toUpperCase() === correct_word.toUpperCase();
     try {
-        // Aquí puedes enviar la respuesta y manejar el resultado
         const response = await veryfyAnswer(userInput.trim().toUpperCase());  // Guardar el resultado de la función
-        console.log(response);
-        setResultMessage(isCorrect ? "¡Correcto!" : "Incorrecto. Intenta de nuevo.");
         if (response) {
-            onCorrect();  // Llamar a la función que maneja la respuesta correcta
+          setResultMessage("¡Correcto!");
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          onCorrect();
+        }else{
+          setResultMessage("Incorrecto. Intenta de nuevo");
         }
     } catch (error) {
         console.error("Error al enviar la respuesta:", error);

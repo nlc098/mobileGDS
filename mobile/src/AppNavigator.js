@@ -10,7 +10,8 @@ import Page3 from './screens/Page3';
 import PerfilUser from './screens/PerfilUser';
 import IndividualGameSet from './screens/IndividualGameSet';
 import GameSet from './screens/GameSet';
-import GameLoad from './screens/GameLoad'; // Importa la nueva pantalla GameLoad
+import GameLoad from './screens/GameLoad';
+import LoadingGame from './screens/LoadingGame'; 
 
 const Stack = createNativeStackNavigator();
 
@@ -28,7 +29,7 @@ const AppNavigator = () => {
       } catch (error) {
         console.error('Error al verificar la sesión:', error);
       } finally {
-        setLoading(false); // Deja de cargar
+        setLoading(false);
       }
     };
 
@@ -89,6 +90,11 @@ const AppNavigator = () => {
       <Stack.Screen
         name="GameLoad"
         component={GameLoad} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="LoadingGame"
+        component={LoadingGame} 
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

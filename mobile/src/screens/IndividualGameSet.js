@@ -32,7 +32,7 @@ const IndividualGameSet = ({ navigation }) => {
 
     // Esperar 30 segundos antes de navegar
     setTimeout(() => {
-      navigation.navigate('GameLoad', { userId, parCatMod });
+      navigation.navigate('LoadingGame', { userId, parCatMod });
     }, 30000);
   };
 

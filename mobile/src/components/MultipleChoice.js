@@ -1,11 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { GameContext } from "../context/GameContext";
 
-const MultipleChoice = ({ MOinfo, veryfyAnswer }) => {
-  const { setAnswer } = useContext(GameContext);
+const MultipleChoice = ({ MOinfo, veryfyAnswer, onCorrect }) => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [confirmedAnswer, setConfirmedAnswer] = useState(null);
+  const [answer, setAnswer] = useState();
+  const [resultMessage, setResultMessage] = useState('');
 
   const {
     question,
@@ -16,78 +16,101 @@ const MultipleChoice = ({ MOinfo, veryfyAnswer }) => {
   } = MOinfo;
 
   useEffect(() => {
+    setSelectedAnswer(null);
+    setConfirmedAnswer(null);
+    setResultMessage('');
     setAnswer('');
   }, [MOinfo]);
 
   const allOptions = [randomCorrectWord, randomWord1, randomWord2, randomWord3];
 
-  const handleAnswerSelection = (option) => {
-    setSelectedAnswer(option);
-  };
-
-  const confirmAnswer = () => {
-    if (selectedAnswer) {
-      setAnswer(selectedAnswer);
-      veryfyAnswer();
-      setConfirmedAnswer(selectedAnswer);
+  const handleCheckAnswer = async (selectedAnswer) => {
+    if (!MOinfo.randomCorrectWord) {
+        setResultMessage("Este juego aún no fue implementado.");
+        return;
     }
-  };
+    try {
+        const response = await veryfyAnswer(selectedAnswer.trim().toUpperCase()); // Verifica la respuesta
+        console.log(response);
+        
+        setConfirmedAnswer(selectedAnswer); // Confirma la respuesta seleccionada
+        
+        if (response) {
+            setResultMessage("¡Correcto!");
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            onCorrect(); // Llama a la función que maneja la respuesta correcta
+        } else {
+            setResultMessage("Incorrecto. Intenta de nuevo.");
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            onCorrect();
+        }
+    } catch (error) {
+        console.error("Error al enviar la respuesta:", error);
+    }
+};
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.question}>{question}</Text>
+const confirmAnswer = () => {
+  if (selectedAnswer) {
+      setAnswer(selectedAnswer);
+      handleCheckAnswer(selectedAnswer); // Verifica la respuesta solo al confirmar
+  }
+};
 
-      {/* Mostramos las opciones como botones */}
-      {allOptions.map((option, index) => (
-        <TouchableOpacity
-          key={index}
+return (
+  <View style={styles.container}>
+    <Text style={styles.question}>{question}</Text>
+
+    {/* Mostramos las opciones como botones */}
+    {allOptions.map((option, index) => (
+      <TouchableOpacity
+        key={index}
+        style={[
+          styles.optionButton,
+          selectedAnswer === option && styles.selectedOption, // Estilo para opción seleccionada
+          confirmedAnswer && option === randomCorrectWord && styles.correctOption, // Estilo para opción correcta
+          confirmedAnswer &&
+            selectedAnswer === option &&
+            selectedAnswer !== randomCorrectWord &&
+            styles.incorrectOption, // Estilo para opción incorrecta
+        ]}
+        onPress={() => setSelectedAnswer(option)} // Solo establece la respuesta seleccionada
+        disabled={confirmedAnswer !== null} // Deshabilitar las opciones después de confirmar
+      >
+        <Text
           style={[
-            styles.optionButton,
-            selectedAnswer === option && styles.selectedOption, // Estilo para opción seleccionada
-            confirmedAnswer && option === randomCorrectWord && styles.correctOption, // Estilo para opción correcta
+            styles.optionText,
+            selectedAnswer === option && styles.selectedOptionText, // Estilo de texto seleccionado
+            confirmedAnswer && option === randomCorrectWord && styles.correctOptionText, // Estilo de texto para la opción correcta
             confirmedAnswer &&
               selectedAnswer === option &&
               selectedAnswer !== randomCorrectWord &&
-              styles.incorrectOption, // Estilo para opción incorrecta
+              styles.incorrectOptionText, // Estilo de texto para la opción incorrecta
           ]}
-          onPress={() => handleAnswerSelection(option)}
-          disabled={confirmedAnswer !== null} // Deshabilitar las opciones después de confirmar
         >
-          <Text
-            style={[
-              styles.optionText,
-              selectedAnswer === option && styles.selectedOptionText, // Estilo de texto seleccionado
-              confirmedAnswer && option === randomCorrectWord && styles.correctOptionText, // Estilo de texto para la opción correcta
-              confirmedAnswer &&
-                selectedAnswer === option &&
-                selectedAnswer !== randomCorrectWord &&
-                styles.incorrectOptionText, // Estilo de texto para la opción incorrecta
-            ]}
-          >
-            {option}
-          </Text>
-        </TouchableOpacity>
-      ))}
-
-      {/* Botón de Confirmar Opción con estilos personalizados */}
-      <TouchableOpacity
-        style={styles.confirmButton}
-        onPress={confirmAnswer}
-        disabled={confirmedAnswer !== null} // Deshabilitar botón después de confirmar
-      >
-        <Text style={styles.confirmButtonText}>Confirmar Opción</Text>
-      </TouchableOpacity>
-
-      {/* Mostrar el estado actual del juego */}
-      {confirmedAnswer && (
-        <Text style={styles.answerText}>
-          {confirmedAnswer === randomCorrectWord
-            ? '¡Respuesta correcta!'
-            : 'Respuesta incorrecta.'}
+          {option}
         </Text>
-      )}
-    </View>
-  );
+      </TouchableOpacity>
+    ))}
+
+    {/* Botón de Confirmar Opción con estilos personalizados */}
+    <TouchableOpacity
+      style={styles.confirmButton}
+      onPress={confirmAnswer} // Llama a confirmAnswer al presionar el botón
+      disabled={confirmedAnswer !== null} // Deshabilitar botón después de confirmar
+    >
+      <Text style={styles.confirmButtonText}>Confirmar Opción</Text>
+    </TouchableOpacity>
+
+    {/* Mostrar el estado actual del juego */}
+    {confirmedAnswer && (
+      <Text style={styles.answerText}>
+        {confirmedAnswer === randomCorrectWord
+          ? '¡Respuesta correcta!'
+          : 'Respuesta incorrecta.'}
+      </Text>
+    )}
+  </View>
+);
 };
 
 const styles = StyleSheet.create({

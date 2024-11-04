@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { textStyles } from "../styles/texts";
-import { GameContext } from "../context/GameContext";
 
 const shuffleArray = (array) => {
   for (let i = array.length - 1; i > 0; i--) {
@@ -12,10 +11,11 @@ const shuffleArray = (array) => {
 };
 
 const OrderWord = ({ OWinfo, onCorrect, veryfyAnswer }) => {
-  const { setAnswer } = useContext(GameContext);
   const { word } = OWinfo;
   const [selectedOrder, setSelectedOrder] = useState([[]]);
   const [shuffledWords, setShuffledWords] = useState([]);
+  const [answer, setAnswer] = useState([]);
+  const [resultMessage, setResultMessage] = useState('');
 
 
   useEffect(() => {
@@ -25,6 +25,7 @@ const OrderWord = ({ OWinfo, onCorrect, veryfyAnswer }) => {
 
     setSelectedOrder([[]]);
     setAnswer('');
+    setResultMessage('');
   }, [OWinfo]);
 
   const handleLetterPress = (letter, wordIndex) => {
@@ -47,31 +48,41 @@ const OrderWord = ({ OWinfo, onCorrect, veryfyAnswer }) => {
   };
 
   const handleSelectedPress = (letter, wordIndex) => {
-    setSelectedOrder((prev) => {
-      const newSelected = [...prev];
-      newSelected[wordIndex] = newSelected[wordIndex].filter(l => l !== letter);
-      return newSelected;
-    });
-    setShuffledWords(prev => {
-      const newWords = [...prev];
-      newWords[wordIndex].push(letter);
-      return newWords;
-    });
+    const letterIndex = selectedOrder[wordIndex].findIndex(l => l === letter);    
+    if (letterIndex !== -1) { 
+      setSelectedOrder((prev) => {
+        const newSelected = [...prev];
+        newSelected[wordIndex].splice(letterIndex, 1);
+        return newSelected;
+      });
+        setShuffledWords(prev => {
+        const newWords = [...prev];
+        newWords[wordIndex].push(letter);
+        return newWords;
+      });
+    }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
+    // Combina las respuestas seleccionadas en una sola cadena
     const selectedStrings = selectedOrder.map(selected => selected.join(''));
-    setAnswer(selectedStrings);
-    // const originalStrings = word.split(' ');
-    // const isCorrect = selectedStrings.every((selectedString, index) => 
-    //   selectedString === originalStrings[index]
-    // );
-    if (veryfyAnswer() == true) {
-      onCorrect();
-    }else{
-      
+    const resultString = selectedStrings.join('');
+    setAnswer(resultString);   
+    try {
+      const sentWordResult = await veryfyAnswer(resultString);
+      console.log(sentWordResult); 
+      if (sentWordResult) {
+        setResultMessage("¡Correcto!");
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        onCorrect();
+      } else {
+        setResultMessage("Incorrecto. Intenta de nuevo");
+      }
+    } catch (error) {
+      console.error("Error al verificar la respuesta:", error);
+      setResultMessage("Error en la verificación. Intenta de nuevo.");
     }
-    };
+  };
 
   const handleReset = () => {
     setSelectedOrder([[]]);
@@ -116,7 +127,8 @@ const OrderWord = ({ OWinfo, onCorrect, veryfyAnswer }) => {
           </View>
         ))}
       </View>
-      
+      {resultMessage && <Text style={styles.resultMessage}>{resultMessage}</Text>}
+
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.verifyButton} onPress={handleVerify}>
           <Text style={styles.verifyButtonText}>Verificar</Text>
@@ -150,15 +162,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   button: {
-    backgroundColor: '#FFFDD0', // Cambiar a un color de contraste
+    backgroundColor: '#FFFDD0',
     padding: 10,
     marginTop: 40,
     margin: 5,
     borderRadius: 5,
     width: '13%',
     maxWidth: 50,
-    borderWidth: 2, // Añadir borde
-    borderColor: '#000', // Color del borde
+    borderWidth: 2,
+    borderColor: '#000',
   },
   buttonText: {
     color: '#000000',
@@ -185,8 +197,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: '13%',
     maxWidth: 50,
-    borderWidth: 2, // Añadir borde
-    borderColor: '#000', // Color del borde
+    borderWidth: 2,
+    borderColor: '#000',
   },
   selectedButtonText: {
     color: '#fff',

@@ -23,17 +23,18 @@ const dialogbubble = require("../../assets/hint-globe.png");
 const InGameScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { userId, parCatMod } = route.params;
+  const { userId, responseData } = route.params;
 
   const [answerData, setAnswerData] = useState([]);
 
-  const timeUsed = useRef(0); // Referencia para el tiempo transcurrido en adivinar el titulo
+  const timeUsed = useRef(0);
+  const initialTime = 30; 
+  const [timeLeft, setTimeLeft] = useState(initialTime);
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
 
   const [hints, setHints] = useState([]);
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
@@ -41,36 +42,12 @@ const InGameScreen = () => {
   const [hintButtonEnabled, setHintButtonEnabled] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!userId || !parCatMod || parCatMod.length === 0) {
-        setError("Parámetros inválidos.");
-        setLoading(false);
-        return;
-      }
-      try {
-        const responseData = await initGame(userId, parCatMod.map(item => item.cat),parCatMod.map(item => item.mod));
-        if (responseData) {
-          const gameModes = responseData.gameModes;
-          setData(gameModes);
-          setAnswerData(responseData);
-          const idGameSingle = await initPlayGame(responseData.idGameSingle)
-          if(idGameSingle != null){
-           
-          }else {
-            console.error("Error: idGameSingle es null o indefinido.");
-          }
-        } else {
-          throw new Error("No se recibieron datos de la API.");
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [userId, parCatMod]);
+    if (responseData) {
+      setAnswerData(responseData); 
+      setData(responseData.gameModes); 
+      setLoading(false);
+    }
+  }, [responseData]);
 
   
   const sendAnswerData = async (answer) => {
@@ -101,6 +78,9 @@ const InGameScreen = () => {
         //navigation.navigate('Home'); // Navegar a Home al terminar
         return prevIndex; // No cambiar el índice si hemos terminado
       }
+      setTimeLeft(initialTime); // Reiniciar el tiempo restante
+      timeUsed.current = 0;
+      setHints([]);
       return nextIndex; // Cambiar al siguiente juego
     });
   };
@@ -121,10 +101,10 @@ const InGameScreen = () => {
           });
           return 30; // Reiniciar el tiempo
         }
-        return prev - 0.1;
+        return prev - 1;
       });
-      timeUsed.current += 0.1;
-    }, 100); // Actualiza cada segundo
+      timeUsed.current += 1;
+    }, 1000); // Actualiza cada segundo
 
     return () => clearInterval(timer); // Limpiar el temporizador al desmontar
   }, [data, navigation]); // Añadir navegación como dependencia

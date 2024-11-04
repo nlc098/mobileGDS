@@ -235,6 +235,31 @@ async logout(username) {
     }
   }
 
+    // Setea horario de inicio de partida
+    async finishPlayGame(idGameSingle) {
+      try {
+        const token = await this.getToken(); // Obtener el token del usuario
+        if (!token) {
+          throw new Error("Token no encontrado");
+        }
+        const response = await fetch(`${API_URL}/game-single/v1/finish-play-game/${idGameSingle}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error("Error al cargar el juego");
+        }
+        const data = await response.json();
+        return data; 
+      } catch (error) {
+        console.error(error.message);
+      }
+    }
+
   async sendAnswer(idGameSingle, userId, answer, gameId, time) {
     try {
       const token = await this.getToken(); // Obtener el token del usuario
@@ -354,6 +379,16 @@ export const initGame = async (userId, categories, modeGames) => {
 export const initPlayGame = async (idGameSingle) => {
   try {
     const data = await apiService.initPlayGame(idGameSingle);
+    return data;
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+};
+
+export const finishPlayGame = async (idGameSingle) => {
+  try {
+    const data = await apiService.finishPlayGame(idGameSingle);
     return data;
   } catch (error) {
     Alert.alert("Error", error.message);

@@ -72,7 +72,7 @@ const SlotMachine = ({ items }) => {
       };
     });
 
-    navigation.navigate('GameLoad', {
+    navigation.navigate('LoadingGame', {
       userId: '1234', // Asegúrate de reemplazar con el ID de usuario correcto
       parCatMod,
     });
