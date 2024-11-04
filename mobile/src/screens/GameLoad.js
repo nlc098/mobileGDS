@@ -1,12 +1,11 @@
 import { useRoute, useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { initGame, initPlayGame, sendAnswer } from '../CallsAPI';
 import MultipleChoice from '../components/MultipleChoice';
 import OrderWord from '../components/OrderWord';
 import GuessPhrase from '../components/GuessPhrase';
-import { GameContext } from "../context/GameContext";
 import {
   View,
   Text,
@@ -26,14 +25,15 @@ const InGameScreen = () => {
   const navigation = useNavigation();
   const { userId, parCatMod } = route.params;
 
-  const { answer } = useContext(GameContext);
   const [answerData, setAnswerData] = useState([]);
+
+  const timeUsed = useRef(0); // Referencia para el tiempo transcurrido en adivinar el titulo
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(10);
+  const [timeLeft, setTimeLeft] = useState(30);
 
   const [hints, setHints] = useState([]);
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
@@ -72,32 +72,37 @@ const InGameScreen = () => {
     fetchData();
   }, [userId, parCatMod]);
 
-  const sendAnswerData = async () => {
+  
+  const sendAnswerData = async (answer) => {
     try {
       const gameKeys = Object.keys(data);
       const currentGameKey = gameKeys[currentGameIndex];
       const gameInfo = data[currentGameKey].infoGame[0];
       const { id } = gameInfo;
-      console.log(answer);
-      console.log(id);
-      const responseData = await sendAnswer(answerData.idGameSingle, userId, answer, id, 21.5);
-      if (responseData == true) {
-        setCurrentGameIndex(prevIndex => {
-          const nextIndex = prevIndex + 1;
-          if (nextIndex >= Object.keys(data).length) {
-            //navigation.navigate('Home'); // Navegar a Home al terminar
-            return prevIndex; // No cambiar el índice si hemos terminado
-          }
-          return nextIndex; // Cambiar al siguiente juego
-        });
-      } else if(responseData == false){
-        
-      }else{
-        throw new Error("No se recibieron datos de la API.");
+      console.log(timeUsed.current);
+      const responseData = await sendAnswer(answerData.idGameSingle, userId, answer, id, timeUsed.current);
+      
+      if (responseData) {
+        // Maneja respuesta true
+        return responseData;
+      } else {
+        // Manejo respuesta false
+        return responseData;
       }
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+     console.log("Error", error.message);
     }
+  };
+
+  const handleCorrectAnswer = () => {
+    setCurrentGameIndex(prevIndex => {
+      const nextIndex = prevIndex + 1;
+      if (nextIndex >= Object.keys(data).length) {
+        //navigation.navigate('Home'); // Navegar a Home al terminar
+        return prevIndex; // No cambiar el índice si hemos terminado
+      }
+      return nextIndex; // Cambiar al siguiente juego
+    });
   };
 
   useEffect(() => {
@@ -114,14 +119,16 @@ const InGameScreen = () => {
             setHints([]); // Se reinician las pistas
             return nextIndex; // Cambiar al siguiente juego
           });
-          return 10; // Reiniciar el tiempo
+          return 30; // Reiniciar el tiempo
         }
-        return prev - 1;
+        return prev - 0.1;
       });
-    }, 1000); // Actualiza cada segundo
+      timeUsed.current += 0.1;
+    }, 100); // Actualiza cada segundo
 
     return () => clearInterval(timer); // Limpiar el temporizador al desmontar
   }, [data, navigation]); // Añadir navegación como dependencia
+
 
   const showNextHint = () => {
     if (data && currentGameIndex < Object.keys(data).length && hintButtonEnabled) {
@@ -189,13 +196,13 @@ const InGameScreen = () => {
 
         switch (idModeGame) {
           case 'OW':
-            GameComponent = <OrderWord OWinfo={gameInfo} veryfyAnswer={sendAnswerData} />;
+            GameComponent = <OrderWord OWinfo={gameInfo} onCorrect={handleCorrectAnswer} veryfyAnswer={sendAnswerData}/>;
             break;
           case 'GP':
-            GameComponent = <GuessPhrase GPinfo={gameInfo} veryfyAnswer={sendAnswerData}/>;
+            GameComponent = <GuessPhrase GPinfo={gameInfo} onCorrect={handleCorrectAnswer} veryfyAnswer={sendAnswerData}/>;
             break;
           case 'MC':
-            GameComponent = <MultipleChoice MOinfo={gameInfo} veryfyAnswer={sendAnswerData}/>;
+            GameComponent = <MultipleChoice MOinfo={gameInfo} onCorrect={handleCorrectAnswer} veryfyAnswer={sendAnswerData}/>;
             break;
           default:
             GameComponent = <Text>Modo de juego no reconocido.</Text>;

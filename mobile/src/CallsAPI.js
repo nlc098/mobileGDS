@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.0.103:8080/api";
+const API_URL = "http://192.168.1.8:8080/api";
 
 // Clase con los endpoints
 class ApiService {
@@ -241,6 +241,7 @@ async logout(username) {
       if (!token) {
         throw new Error("Token no encontrado");
       }
+      
       const response = await fetch(`${API_URL}/game-single/v1/play-game`, {
         method: "POST",
         headers: {

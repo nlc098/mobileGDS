@@ -1,56 +1,56 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { GameContext } from "../context/GameContext";
 
-const GuessPhrase = ({ GPinfo, veryfyAnswer }) => {
-    const { setAnswer } = useContext(GameContext);
-    const { phrase, correct_word } = GPinfo;
-    const [userInput, setUserInput] = useState('');
-    const [resultMessage, setResultMessage] = useState('');
+const GuessPhrase = ({ GPinfo, onCorrect, veryfyAnswer }) => {
+  const { phrase, correct_word } = GPinfo;
+  const [userInput, setUserInput] = useState('');
+  const [resultMessage, setResultMessage] = useState('');
 
     useEffect(() => {
       setUserInput('');
-      setAnswer('');
+      setResultMessage('');
     }, [GPinfo]);
 
-    const handleCheckAnswer = () => {
-      if (correct_word === null) {
-          setResultMessage("Este juego aún no fue implementado.");
-      } else {
-        setAnswer(userInput.trim().toUpperCase());
-        veryfyAnswer();
-        // const isCorrect = userInput.trim().toLowerCase() === correct_word.toLowerCase();
-        // setResultMessage(isCorrect ? "¡Correcto!" : "Incorrecto. Intenta de nuevo.");
-        // if(isCorrect){
-        //   onCorrect();
-        // }
-      }
-    };
-
-    // useEffect(() => {
-    //   setUserInput('');
-    // }, [phrase]);
-
+  // Manejo de verificación de respuesta
+  const handleCheckAnswer = async () => {
+    if (!correct_word) {
+        setResultMessage("Este juego aún no fue implementado.");
+        return;
+    }
+    const isCorrect = userInput.trim().toUpperCase() === correct_word.toUpperCase();
+    try {
+        // Aquí puedes enviar la respuesta y manejar el resultado
+        const response = await veryfyAnswer(userInput.trim().toUpperCase());  // Guardar el resultado de la función
+        console.log(response);
+        setResultMessage(isCorrect ? "¡Correcto!" : "Incorrecto. Intenta de nuevo.");
+        if (response) {
+            onCorrect();  // Llamar a la función que maneja la respuesta correcta
+        }
+    } catch (error) {
+        console.error("Error al enviar la respuesta:", error);
+    }
+};
+    
     return (
-        <View style={styles.container}>
-            <View style={styles.containerPhrase}>
-              {phrase ? (
-                  <Text style={styles.phrase}>{phrase}</Text>
-              ) : (
-                  <Text>Este juego aún no fue implementado.</Text>
-              )}
-            </View>
-            <TextInput 
-                style={styles.input}
-                value={userInput}
-                onChangeText={setUserInput}
-                placeholder="Escribe tu respuesta"
-            />
-            {resultMessage && <Text style={styles.resultMessage}>{resultMessage}</Text>}
-            <TouchableOpacity style={styles.verifyButton} onPress={handleCheckAnswer}>
-              <Text style={styles.verifyButtonText}>Verificar</Text>
-            </TouchableOpacity>
-        </View>
+      <View style={styles.container}>
+          <View style={styles.containerPhrase}>
+            {phrase ? (
+                <Text style={styles.phrase}>{phrase}</Text>
+            ) : (
+                <Text>Este juego aún no fue implementado.</Text>
+            )}
+          </View>              
+          <TextInput 
+              style={styles.input}
+              value={userInput}
+              onChangeText={setUserInput}
+              placeholder="Escribe tu respuesta"
+          />
+          {resultMessage && <Text style={styles.resultMessage}>{resultMessage}</Text>}
+          <TouchableOpacity style={styles.verifyButton} onPress={handleCheckAnswer}>
+            <Text style={styles.verifyButtonText}>Verificar</Text>
+          </TouchableOpacity>
+      </View>
     );
 };
 

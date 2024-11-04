@@ -11,7 +11,7 @@ const shuffleArray = (array) => {
   return array;
 };
 
-const OrderWord = ({ OWinfo, veryfyAnswer }) => {
+const OrderWord = ({ OWinfo, onCorrect, veryfyAnswer }) => {
   const { setAnswer } = useContext(GameContext);
   const { word } = OWinfo;
   const [selectedOrder, setSelectedOrder] = useState([[]]);
@@ -62,16 +62,15 @@ const OrderWord = ({ OWinfo, veryfyAnswer }) => {
   const handleVerify = () => {
     const selectedStrings = selectedOrder.map(selected => selected.join(''));
     setAnswer(selectedStrings);
-    veryfyAnswer();
-
     // const originalStrings = word.split(' ');
-
     // const isCorrect = selectedStrings.every((selectedString, index) => 
     //   selectedString === originalStrings[index]
     // );
-    // if (isCorrect) {
-    //   onCorrect();
-    // }
+    if (veryfyAnswer() == true) {
+      onCorrect();
+    }else{
+      
+    }
     };
 
   const handleReset = () => {
@@ -84,6 +83,7 @@ const OrderWord = ({ OWinfo, veryfyAnswer }) => {
   return (
     <View style={styles.container}>
       <Text style={textStyles.title}>Ordena la palabra...</Text>
+      
       <View style={styles.buttonsContainer}>
         {/* Contenedor para botones seleccionados */}
         <View style={styles.selectedOrderContainer}>

@@ -1,4 +1,4 @@
-import React, { useState, useContext  } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { GameContext } from "../context/GameContext";
 
