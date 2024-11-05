@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, Image, ImageBackground, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, Image, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login } from "../CallsAPI";
 import { buttonStyles } from "../styles/buttons";
@@ -7,7 +7,6 @@ import { textStyles } from "../styles/texts";
 import BackImage from '../styles/BackImage';
 
 const logo = require("../../assets/GDSsimplelogo.png");
-const fondo = require("../../assets/fondo_mobile.jpeg");
 
 const Login = ({ navigation }) => {
   const [username, setUsername] = useState("");
@@ -48,6 +47,9 @@ const Login = ({ navigation }) => {
         onChangeText={setPassword}
         secureTextEntry
       />
+      <Pressable onPress={() => navigation.navigate("RestorePassword")}>
+        <Text style={styles.recoverPasswordText}>Recuperar contraseña</Text>
+      </Pressable>
       <View style={styles.buttonContainer}>
         <Pressable style={buttonStyles.buttonhalfwidth} onPress={handleLogin}>
           <Text style={styles.buttontext}>Iniciar sesión</Text>
@@ -101,6 +103,14 @@ const styles = StyleSheet.create({
     marginBottom: 50,
     marginTop: -50,
     borderRadius: 25,
+  },
+  recoverPasswordText: {
+    color: "#B36F6F",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+    textDecorationLine: 'underline',
+    marginTop: 10,
   },
 });
 

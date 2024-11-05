@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.1.8:8080/api";
+const API_URL = "http://192.168.0.107:8080/api";
 
 // Clase con los endpoints
 class ApiService {
@@ -56,7 +56,6 @@ class ApiService {
     }
   }
 
-// Método para cerrar sesión (borrar el token)
 async logout(username) {
   try {
     const token = await this.getToken(); 
@@ -291,6 +290,20 @@ async logout(username) {
       console.error(error.message);
     }
   }
+
+  async restorePassword(email) {
+    try {
+      const response = await fetch(`${API_URL}/v1/forgot-password/${email}`, {
+        method: "POST",
+      });
+
+      const data = await response.text();
+      return data;
+
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
 }
 
 const apiService = new ApiService();
@@ -405,3 +418,12 @@ export const sendAnswer = async (idGameSingle, userId, answer, gameId, time) => 
     return null;
   }
 };
+
+  export const restorePassword = async (email) => {
+    try {
+      const data = await apiService.restorePassword(email);
+      return data;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };

@@ -2,7 +2,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState, useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { initGame, initPlayGame, sendAnswer } from '../CallsAPI';
+import {  sendAnswer } from '../CallsAPI';
 import MultipleChoice from '../components/MultipleChoice';
 import OrderWord from '../components/OrderWord';
 import GuessPhrase from '../components/GuessPhrase';
@@ -75,7 +75,7 @@ const InGameScreen = () => {
     setCurrentGameIndex(prevIndex => {
       const nextIndex = prevIndex + 1;
       if (nextIndex >= Object.keys(data).length) {
-        //navigation.navigate('Home'); // Navegar a Home al terminar
+        navigation.navigate('GameFinished'); // Navegar a pantalla de resumen de partida
         return prevIndex; // No cambiar el índice si hemos terminado
       }
       setTimeLeft(initialTime); // Reiniciar el tiempo restante
@@ -94,6 +94,7 @@ const InGameScreen = () => {
             const nextIndex = prevIndex + 1;
             if (nextIndex >= Object.keys(data).length) {
               clearInterval(timer);
+              navigation.navigate('GameFinished'); // Navegar a pantalla de resumen de partida
               return prevIndex; // No cambiar el índice si hemos terminado
             }
             setHints([]); // Se reinician las pistas
@@ -204,9 +205,7 @@ const InGameScreen = () => {
   return (
     <ImageBackground source={fondo} style={styles.container}>
       <View style={styles.topRow}>
-        <Ionicons name="person-circle-outline" size={60} color="black" />
         <AntDesign name="questioncircle" size={50} color="black" />
-        <Ionicons name="person-circle-outline" size={60} color="black" />
       </View>
 
       <View style={styles.timerContainer}>

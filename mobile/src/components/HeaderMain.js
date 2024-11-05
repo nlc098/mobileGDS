@@ -2,12 +2,16 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Logo from '../../assets/GDS-vertical-logo.png';
+import { useNavigation } from '@react-navigation/native';
 
 const HeaderMain = () => {
+  
+  const navigation = useNavigation();
+
   return (
     <View style={styles.header}>
       <Image source={Logo} style={styles.logo} resizeMode="contain" />
-      <TouchableOpacity style={styles.settingsButton} onPress={() => { /* Acción aquí si es necesario */ }}>
+      <TouchableOpacity style={styles.settingsButton} onPress={() => navigation.navigate('Config')}>
         <Icon name="settings-outline" size={40} color="#000000" />
       </TouchableOpacity>
     </View>

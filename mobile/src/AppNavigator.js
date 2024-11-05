@@ -5,13 +5,15 @@ import { View, ActivityIndicator } from 'react-native';
 import Login from './screens/Login';
 import RegisterScreen from './screens/Register';
 import Home from './screens/Home';
-import User from './screens/User';
 import Page3 from './screens/Page3';
 import PerfilUser from './screens/PerfilUser';
 import IndividualGameSet from './screens/IndividualGameSet';
 import GameSet from './screens/GameSet';
 import GameLoad from './screens/GameLoad';
 import LoadingGame from './screens/LoadingGame'; 
+import GameFinished from './screens/GameFinished';
+import Config from './screens/Config';
+import RestorePassword from './screens/RestorePassword';
 
 const Stack = createNativeStackNavigator();
 
@@ -63,11 +65,6 @@ const AppNavigator = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="User"
-        component={User}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
         name="Page3"
         component={Page3}
         options={{ headerShown: false }}
@@ -95,6 +92,21 @@ const AppNavigator = () => {
       <Stack.Screen
         name="LoadingGame"
         component={LoadingGame} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="GameFinished"
+        component={GameFinished} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Config"
+        component={Config} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="RestorePassword"
+        component={RestorePassword} 
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

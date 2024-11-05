@@ -20,13 +20,11 @@ const LoadingGame = () => {
       try {
         const responseData = await initGame(userId, parCatMod.map(item => item.cat), parCatMod.map(item => item.mod));
         if (responseData) {
-          setResponseData(responseData);  // Guardamos el responseData
+          setResponseData(responseData); 
           const idGameSingle = await initPlayGame(responseData.idGameSingle);
-          if (idGameSingle != null) {
-            // Todo está bien, podemos continuar
-          } else {
+          if (idGameSingle == null) {
             console.error("Error: idGameSingle es null o indefinido.");
-          }
+          } 
         } else {
           throw new Error("No se recibieron datos de la API.");
         }
@@ -67,8 +65,8 @@ const LoadingGame = () => {
         <View style={styles.circle}>
           <Text style={styles.timerText}>{timeLeft}</Text>
         </View>
-        <Text>PREPÁRATE...</Text>
       </View>
+      <Text style={styles.text}>PREPÁRATE...</Text>
     </View>
   );
 
@@ -88,18 +86,24 @@ const styles = StyleSheet.create({
       alignItems: "center",
     },
     circle: {
-      width: 120, 
-      height: 120, 
-      borderRadius: 40, 
-      borderWidth: 2, 
+      width: 200, 
+      height: 200, 
+      borderRadius: 200, 
+      borderWidth: 10, 
       borderColor: "#fff", 
       justifyContent: "center", 
       alignItems: "center", 
     },
     timerText: {
+      fontSize: 55,
+      fontWeight: "bold",
+      color: "#fff",
+    },
+    text: {
       fontSize: 36,
       fontWeight: "bold",
       color: "#fff",
+      marginTop: 30,
     },
   });
 

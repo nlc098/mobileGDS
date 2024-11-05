@@ -51,10 +51,10 @@ const SlotMachine = ({ items }) => {
           setSpinning(false);
           setShowResults(true);
 
-          // Esperar 10 segundos antes de navegar
+          // Esperar 2 segundo antes de navegar
           setTimeout(() => {
             logResults(newResults, categoriesWithGameModes);
-          }, 1000);
+          }, 2000);
         }
       });
     };
@@ -125,7 +125,6 @@ const styles = StyleSheet.create({
   slotContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
   },
   slotRow: {
     flexDirection: 'row',
@@ -155,7 +154,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   resultText: {
-    fontSize: 20,
+    fontSize: 30,
   }, 
 });
 

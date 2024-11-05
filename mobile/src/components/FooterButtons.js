@@ -5,7 +5,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 const FooterButtons = () => {
   const navigation = useNavigation();
-  const route = useRoute(); // Obtener la ruta actual
+  const route = useRoute();
 
   // Función para determinar si el botón es el actual
   const isCurrentRoute = (routeName) => {
@@ -15,19 +15,19 @@ const FooterButtons = () => {
   return (
     <View style={styles.footer}>
       <TouchableOpacity
-        style={[styles.button, isCurrentRoute('User') && styles.activeButton]} // Aplica el estilo si es la ruta actual
-        onPress={() => navigation.navigate('User')}
+        style={[styles.button, isCurrentRoute('PerfilUser') && styles.activeButton]} 
+        onPress={() => navigation.navigate('PerfilUser')}
       >
-        <Icon name="person-circle" size={35} color={isCurrentRoute('User') ? '#B36F6F' : '#3B3B3B'} />
+        <Icon name="person-circle" size={35} color={isCurrentRoute('PerfilUser') ? '#B36F6F' : '#3B3B3B'} />
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.button, isCurrentRoute('Home') && styles.activeButton]} // Aplica el estilo si es la ruta actual
+        style={[styles.button, isCurrentRoute('Home') && styles.activeButton]} 
         onPress={() => navigation.navigate('Home')}
       >
         <Icon name="home" size={35} color={isCurrentRoute('Home') ? '#B36F6F' : '#3B3B3B'} />
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.button, isCurrentRoute('Page3') && styles.activeButton]} // Aplica el estilo si es la ruta actual
+        style={[styles.button, isCurrentRoute('Page3') && styles.activeButton]} 
         onPress={() => navigation.navigate('Page3')}
       >
         <Icon name="bar-chart" size={35} color={isCurrentRoute('Page3') ? '#B36F6F' : '#3B3B3B'} />
