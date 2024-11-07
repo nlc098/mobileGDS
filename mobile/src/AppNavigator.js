@@ -5,7 +5,7 @@ import { View, ActivityIndicator } from 'react-native';
 import Login from './screens/Login';
 import RegisterScreen from './screens/Register';
 import Home from './screens/Home';
-import Page3 from './screens/Page3';
+import Statistics from './screens/Statistics';
 import PerfilUser from './screens/PerfilUser';
 import IndividualGameSet from './screens/IndividualGameSet';
 import GameSet from './screens/GameSet';
@@ -65,8 +65,8 @@ const AppNavigator = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="Page3"
-        component={Page3}
+        name="Statistics"
+        component={Statistics}
         options={{ headerShown: false }}
       />
       <Stack.Screen

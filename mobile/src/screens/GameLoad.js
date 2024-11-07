@@ -2,7 +2,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState, useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import {  sendAnswer } from '../CallsAPI';
+import { sendAnswer } from '../CallsAPI';
 import MultipleChoice from '../components/MultipleChoice';
 import OrderWord from '../components/OrderWord';
 import GuessPhrase from '../components/GuessPhrase';
@@ -20,7 +20,7 @@ const brainDialog = require("../../assets/idle_brain.png");
 const fondo = require("../../assets/fondo_mobile.jpeg");
 const dialogbubble = require("../../assets/hint-globe.png");
 
-const InGameScreen = () => {
+const GameLoad = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { userId, responseData } = route.params;
@@ -33,7 +33,6 @@ const InGameScreen = () => {
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
 
   const [hints, setHints] = useState([]);
@@ -163,7 +162,6 @@ const InGameScreen = () => {
 
 
   const renderGame = () => {
-    if (error) return <Text>{error}</Text>;
     if (loading) return <ActivityIndicator size="large" color="#0000ff" />;
 
     if (data && currentGameIndex < Object.keys(data).length) {
@@ -232,7 +230,7 @@ const InGameScreen = () => {
           {hints.length > 0 ? (
             <Text style={styles.bubbleText}>{hints[currentHintIndex]}</Text>
           ) : (
-            <Text style={styles.bubbleText}>¡Apurate!</Text>
+            <Text style={styles.bubbleText}>¡Ya lo tienes!</Text>
           )}
         </View>
       </View>
@@ -360,4 +358,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default InGameScreen;
+export default GameLoad;

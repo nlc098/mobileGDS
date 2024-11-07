@@ -148,16 +148,16 @@ const styles = StyleSheet.create({
     color: '#653532',
   },
   correctOption: {
-    backgroundColor: 'green', // Fondo verde para opción correcta
+    backgroundColor: 'green',
   },
   correctOptionText: {
-    color: '#fff', // Texto blanco para opción correcta
+    color: '#fff', 
   },
   incorrectOption: {
-    backgroundColor: 'red', // Fondo rojo para opción incorrecta
+    backgroundColor: 'red',
   },
   incorrectOptionText: {
-    color: '#fff', // Texto blanco para opción incorrecta
+    color: '#fff', 
   },
   confirmButton: {
     backgroundColor: '#653532',
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 20,
     borderWidth: 3,
-    borderColor: '#B36F6F', // Borde del botón de confirmar
+    borderColor: '#B36F6F', 
   },
   confirmButtonText: {
     color: '#fff',

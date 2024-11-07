@@ -127,8 +127,6 @@ const OrderWord = ({ OWinfo, onCorrect, veryfyAnswer }) => {
           </View>
         ))}
       </View>
-      {resultMessage && <Text style={styles.resultMessage}>{resultMessage}</Text>}
-
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.verifyButton} onPress={handleVerify}>
           <Text style={styles.verifyButtonText}>Verificar</Text>
@@ -137,6 +135,7 @@ const OrderWord = ({ OWinfo, onCorrect, veryfyAnswer }) => {
           <Text style={styles.resetButtonText}>Reiniciar</Text>
         </TouchableOpacity>
       </View>
+      {resultMessage && <Text style={styles.resultMessage}>{resultMessage}</Text>}
     </View>
   );
 };
@@ -241,6 +240,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     textAlign: 'center',
+  },
+  resultMessage: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 

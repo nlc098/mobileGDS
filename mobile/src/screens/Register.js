@@ -10,12 +10,10 @@ import {
   Pressable,
   Image,
   Alert,
-  ImageBackground,
   View, 
 } from "react-native";
 
 const logo = require("../../assets/GDSsimplelogo.png");
-const fondo = require("../../assets/fondo_mobile.jpeg");
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -25,7 +23,7 @@ export default function Register() {
   const [birthdayYear, setBirthdayYear] = useState("");
   const [birthdayMonth, setBirthdayMonth] = useState("");
   const [birthdayDay, setBirthdayDay] = useState("");
-  const [profileImage, setProfileImage] = useState(null);
+  // const [profileImage, setProfileImage] = useState(null);
   const [errors, setErrors] = useState({
     email: "",
     password: "",
@@ -71,7 +69,7 @@ export default function Register() {
         dia: parseInt(birthdayDay),
       };
 
-      const result = await registrarse(username, email, password, birthday, country, profileImage);
+      const result = await registrarse(username, email, password, birthday, country/*, profileImage*/);
       if (result) {
         Alert.alert("Registro exitoso", `Email: ${email}\nUsername: ${username}`);
       }
@@ -187,7 +185,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   logo: {
-    width: "90%",
+    width: 300,
     height: 200,
     marginTop: -50,
     marginBottom: 50,

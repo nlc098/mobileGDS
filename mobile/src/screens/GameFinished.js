@@ -6,6 +6,16 @@ import { buttonStyles } from '../styles/buttons';
 const GameFinished = () => {
   const navigation = useNavigation();
 
+  const gameFinished = async () => {
+    try {
+      await finishPlayGame(idGameSingle);
+      navigation.navigate("Home");
+    } catch (error) {
+      console.error("Error during login:", error);
+      alert("Error al iniciar sesión. Por favor, inténtelo de nuevo.");
+    }
+  };
+
   return (
     <ImageBackground 
         source={require('../../assets/fondo_mobile.jpeg')} 

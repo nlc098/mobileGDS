@@ -18,7 +18,7 @@ const GuessPhrase = ({ GPinfo, onCorrect, veryfyAnswer }) => {
         return;
     }
     try {
-        const response = await veryfyAnswer(userInput.trim().toUpperCase());  // Guardar el resultado de la función
+        const response = await veryfyAnswer(userInput.trim().toUpperCase()); 
         if (response) {
           setResultMessage("¡Correcto!");
           await new Promise(resolve => setTimeout(resolve, 1500));
@@ -92,7 +92,8 @@ const styles = StyleSheet.create({
     },
     resultMessage: {
       marginBottom: 50,
-      fontSize: 15,
+      fontSize: 18,
+      fontWeight: 'bold',
     },
     containerPhrase: {
       backgroundColor: '#FFF',
