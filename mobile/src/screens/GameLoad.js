@@ -28,7 +28,7 @@ const GameLoad = () => {
   const [answerData, setAnswerData] = useState([]);
 
   const timeUsed = useRef(0);
-  const initialTime = 6; 
+  const initialTime = 10; 
   const [timeLeft, setTimeLeft] = useState(initialTime);
 
   const [data, setData] = useState(null);
@@ -55,7 +55,7 @@ const GameLoad = () => {
       const currentGameKey = gameKeys[currentGameIndex];
       const gameInfo = data[currentGameKey].infoGame[0];
       const { id } = gameInfo;
-      console.log(answerData.idGameSingle);
+      //console.log(answerData.idGameSingle);
       const responseData = await sendAnswer(answerData.idGameSingle, userId, answer, id, timeUsed.current);
       
       if (responseData) {
@@ -74,7 +74,8 @@ const GameLoad = () => {
     setCurrentGameIndex(prevIndex => {
       const nextIndex = prevIndex + 1;
       if (nextIndex >= Object.keys(data).length) {
-        navigation.navigate('GameFinished'); // Navegar a pantalla de resumen de partida
+        const { idGameSingle } = answerData;
+        navigation.navigate('GameFinished', { idGameSingle }); // Navegar a pantalla de resumen de partida
         return prevIndex; // No cambiar el índice si hemos terminado
       }
       setTimeLeft(initialTime); // Reiniciar el tiempo restante
@@ -93,7 +94,8 @@ const GameLoad = () => {
             const nextIndex = prevIndex + 1;
             if (nextIndex >= Object.keys(data).length) {
               clearInterval(timer);
-              navigation.navigate('GameFinished'); // Navegar a pantalla de resumen de partida
+              const { idGameSingle } = answerData;
+              navigation.navigate('GameFinished', { idGameSingle }); // Navegar a pantalla de resumen de partida
               return prevIndex; // No cambiar el índice si hemos terminado
             }
             setHints([]); // Se reinician las pistas
