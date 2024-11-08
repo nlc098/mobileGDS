@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.0.106:8080/api";
+const API_URL = "http://192.168.1.11:8080/api";
 
 // Función para decodificar el JWT, retorna el userId
 const decodeJWT = (token) => {
@@ -154,6 +154,38 @@ async logout(username) {
       return data; // Devolver los datos del usuario
     } catch (error) {
       console.error("Error al obtener el usuario:", error.message); 
+      throw new Error(error.message);
+    }
+  }
+  // Método para editar datos del usuario
+  async editUser(username, newPassword, newUrlPerfil) {
+    try {
+      const token = await this.getToken(); // Obtener el token del usuario
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+  
+      const response = await fetch(`${API_URL}/users/v1/edit/${username}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          password: newPassword,
+          urlPerfil: newUrlPerfil
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al editar el usuario");
+      }
+  
+      const data = await response.json();
+      return data; 
+    } catch (error) {
+      console.error("Error al editar el usuario:", error.message);
       throw new Error(error.message);
     }
   }
@@ -394,6 +426,16 @@ export const getUserByUsername = async () => {
     return userData;
   } catch (error) {
     console.error("Error al obtener el usuario:", error.message);
+    return null;
+  }
+};
+
+export const editUser = async (username, newPassword, newUrlPerfil) => {
+  try {
+    const data = await apiService.editUser(username, newPassword, newUrlPerfil);
+    return data;
+  } catch (error) {
+    Alert.alert("Error", error.message);
     return null;
   }
 };

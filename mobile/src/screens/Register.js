@@ -12,6 +12,7 @@ import {
   Alert,
   View, 
 } from "react-native";
+import { useNavigation } from '@react-navigation/native'; // Importa useNavigation
 
 const logo = require("../../assets/GDSsimplelogo.png");
 
@@ -23,7 +24,6 @@ export default function Register() {
   const [birthdayYear, setBirthdayYear] = useState("");
   const [birthdayMonth, setBirthdayMonth] = useState("");
   const [birthdayDay, setBirthdayDay] = useState("");
-  // const [profileImage, setProfileImage] = useState(null);
   const [errors, setErrors] = useState({
     email: "",
     password: "",
@@ -31,6 +31,8 @@ export default function Register() {
     country: "",
     birthday: "",
   });
+
+  const navigation = useNavigation(); // Usamos useNavigation para acceder a la navegación
 
   const validateFields = () => {
     let isValid = true;
@@ -72,13 +74,15 @@ export default function Register() {
       const result = await registrarse(username, email, password, birthday, country/*, profileImage*/);
       if (result) {
         Alert.alert("Registro exitoso", `Email: ${email}\nUsername: ${username}`);
+        // Redirigir al Login después de un registro exitoso
+        navigation.navigate('Login');
       }
     }
   };
 
   return (
     <BackImage>
-    <Image source={logo} resizeMode="contain" style={styles.logo} />
+      <Image source={logo} resizeMode="contain" style={styles.logo} />
       <Text style={textStyles.title}>Registrarse</Text>
 
       <TextInput
@@ -146,7 +150,7 @@ export default function Register() {
         <Text style={styles.buttontext}>Registrarse</Text>
       </Pressable>
     </BackImage>
-    );
+  );
 }
 
 const styles = StyleSheet.create({
