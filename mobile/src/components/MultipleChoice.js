@@ -59,12 +59,21 @@ const confirmAnswer = () => {
 return (
   <View style={styles.container}>
     <Text style={styles.question}>{question}</Text>
+        {/* Mostrar el estado actual del juego */}
+        {confirmedAnswer && (
+      <Text style={[styles.answerText, 
+        confirmedAnswer === randomCorrectWord ? styles.correctAnswer : styles.incorrectAnswer]}>
+        {confirmedAnswer === randomCorrectWord
+          ? '¡Respuesta correcta!'
+          : 'Respuesta incorrecta.'}
+      </Text>
+    )}
 
     {/* Mostramos las opciones como botones */}
     {allOptions.map((option, index) => (
       <TouchableOpacity
         key={index}
-        style={[
+        style={[ 
           styles.optionButton,
           selectedAnswer === option && styles.selectedOption, // Estilo para opción seleccionada
           confirmedAnswer && option === randomCorrectWord && styles.correctOption, // Estilo para opción correcta
@@ -100,15 +109,6 @@ return (
     >
       <Text style={styles.confirmButtonText}>Confirmar Opción</Text>
     </TouchableOpacity>
-
-    {/* Mostrar el estado actual del juego */}
-    {confirmedAnswer && (
-      <Text style={styles.answerText}>
-        {confirmedAnswer === randomCorrectWord
-          ? '¡Respuesta correcta!'
-          : 'Respuesta incorrecta.'}
-      </Text>
-    )}
   </View>
 );
 };
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: 20,
-    marginBottom: 20,
+    marginBottom: 10,
     textAlign: 'center',
     padding: 10, // Espacio alrededor del texto
     borderWidth: 3, // Borde alrededor del texto
@@ -183,11 +183,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   answerText: {
-    marginTop: 20,
+    marginTop: 5,
+    marginBottom: 5,
     fontSize: 18,
     fontWeight: 'bold',
   },
+  correctAnswer: {
+    color: '#006400', // Verde oscuro para respuesta correcta
+  },
+  incorrectAnswer: {
+    color: '#8B0000', // Rojo oscuro para respuesta incorrecta
+  },
 });
-
 
 export default MultipleChoice;

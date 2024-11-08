@@ -17,12 +17,10 @@ const OrderWord = ({ OWinfo, onCorrect, veryfyAnswer }) => {
   const [answer, setAnswer] = useState([]);
   const [resultMessage, setResultMessage] = useState('');
 
-
   useEffect(() => {
     const words = word.split(' ');
     const shuffled = words.map(w => shuffleArray(w.split('')));
     setShuffledWords(shuffled);
-
     setSelectedOrder([[]]);
     setAnswer('');
     setResultMessage('');
@@ -55,7 +53,7 @@ const OrderWord = ({ OWinfo, onCorrect, veryfyAnswer }) => {
         newSelected[wordIndex].splice(letterIndex, 1);
         return newSelected;
       });
-        setShuffledWords(prev => {
+      setShuffledWords(prev => {
         const newWords = [...prev];
         newWords[wordIndex].push(letter);
         return newWords;
@@ -72,15 +70,15 @@ const OrderWord = ({ OWinfo, onCorrect, veryfyAnswer }) => {
       const sentWordResult = await veryfyAnswer(resultString);
       console.log(sentWordResult); 
       if (sentWordResult) {
-        setResultMessage("¡Correcto!");
+        setResultMessage({ text: "¡Correcto!", color: 'darkgreen' });
         await new Promise(resolve => setTimeout(resolve, 1500));
         onCorrect();
       } else {
-        setResultMessage("Incorrecto. Intenta de nuevo");
+        setResultMessage({ text: "Incorrecto. Intenta de nuevo", color: 'darkred' });
       }
     } catch (error) {
       console.error("Error al verificar la respuesta:", error);
-      setResultMessage("Error en la verificación. Intenta de nuevo.");
+      setResultMessage({ text: "Error en la verificación. Intenta de nuevo.", color: 'darkred' });
     }
   };
 
@@ -94,7 +92,11 @@ const OrderWord = ({ OWinfo, onCorrect, veryfyAnswer }) => {
   return (
     <View style={styles.container}>
       <Text style={textStyles.title}>Ordena la palabra...</Text>
-      
+      {resultMessage && 
+        <Text style={[styles.resultMessage, { color: resultMessage.color }]}>
+          {resultMessage.text}
+        </Text>
+      }
       <View style={styles.buttonsContainer}>
         {/* Contenedor para botones seleccionados */}
         <View style={styles.selectedOrderContainer}>
@@ -135,7 +137,6 @@ const OrderWord = ({ OWinfo, onCorrect, veryfyAnswer }) => {
           <Text style={styles.resetButtonText}>Reiniciar</Text>
         </TouchableOpacity>
       </View>
-      {resultMessage && <Text style={styles.resultMessage}>{resultMessage}</Text>}
     </View>
   );
 };
@@ -238,10 +239,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   resultMessage: {
+    marginTop: 5,
     fontSize: 18,
     fontWeight: 'bold',
   },
 });
-
 
 export default OrderWord;

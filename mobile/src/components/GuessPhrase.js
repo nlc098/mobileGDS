@@ -43,13 +43,7 @@ const GuessPhrase = ({ GPinfo, onCorrect, veryfyAnswer }) => {
         ) : (
             <Text>Este juego aún no fue implementado.</Text>
         )}
-      </View>              
-      <TextInput 
-          style={styles.input}
-          value={userInput}
-          onChangeText={setUserInput}
-          placeholder="Escribe tu respuesta"
-      />
+      </View>     
       {resultMessage && (
         <Text 
           style={[
@@ -59,7 +53,14 @@ const GuessPhrase = ({ GPinfo, onCorrect, veryfyAnswer }) => {
         >
           {resultMessage}
         </Text>
-      )}
+      )}         
+      <TextInput 
+          style={styles.input}
+          value={userInput}
+          onChangeText={setUserInput}
+          placeholder="Escribe tu respuesta"
+      />
+   
       <TouchableOpacity style={styles.verifyButton} onPress={handleCheckAnswer}>
         <Text style={styles.verifyButtonText}>Verificar</Text>
       </TouchableOpacity>
@@ -105,7 +106,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   resultMessage: {
-    marginBottom: 20,
+    marginTop: 5,
+    marginBottom: 5,
     fontSize: 18,
     fontWeight: 'bold',
   },
