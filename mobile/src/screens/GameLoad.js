@@ -28,7 +28,7 @@ const GameLoad = () => {
   const [answerData, setAnswerData] = useState([]);
 
   const timeUsed = useRef(0);
-  const initialTime = 30; 
+  const initialTime = 6; 
   const [timeLeft, setTimeLeft] = useState(initialTime);
 
   const [data, setData] = useState(null);
@@ -55,7 +55,7 @@ const GameLoad = () => {
       const currentGameKey = gameKeys[currentGameIndex];
       const gameInfo = data[currentGameKey].infoGame[0];
       const { id } = gameInfo;
-      console.log(timeUsed.current);
+      console.log(answerData.idGameSingle);
       const responseData = await sendAnswer(answerData.idGameSingle, userId, answer, id, timeUsed.current);
       
       if (responseData) {
@@ -99,7 +99,7 @@ const GameLoad = () => {
             setHints([]); // Se reinician las pistas
             return nextIndex; // Cambiar al siguiente juego
           });
-          return 30; // Reiniciar el tiempo
+          return 6; // Reiniciar el tiempo
         }
         return prev - 1;
       });

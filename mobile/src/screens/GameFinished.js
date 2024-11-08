@@ -1,17 +1,20 @@
 import { ImageBackground, Text, TouchableOpacity, StyleSheet, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Logo from '../components/Logo';
 import { buttonStyles } from '../styles/buttons';
 
 const GameFinished = () => {
   const navigation = useNavigation();
+  const route = useRoute();
+
+  const { idGameSingle } = route.params;
 
   const gameFinished = async () => {
     try {
       await finishPlayGame(idGameSingle);
       navigation.navigate("Home");
     } catch (error) {
-      console.error("Error during login:", error);
+      console.error("Error finalizando la partida:", error);
       alert("Error al iniciar sesión. Por favor, inténtelo de nuevo.");
     }
   };

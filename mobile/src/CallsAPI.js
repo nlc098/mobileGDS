@@ -56,13 +56,13 @@ class ApiService {
   
       const data = await response.json();
       const token = data.token;
-  
       // Paso 1: Decodificar el JWT para obtener el payload
       const jwtDecoded = decodeJWT(token);
       const userId = jwtDecoded.userId
       // Paso 2: Guardar el JWT y el userId en AsyncStorage
       await AsyncStorage.setItem("userId", userId.toString());
-  
+      await AsyncStorage.setItem("userToken", token);
+      await AsyncStorage.setItem("username", username);
       return data;
   
     } catch (error) {

@@ -28,8 +28,7 @@ const IndividualGameSet = ({ navigation }) => {
   }, [selectedCategoryID]);
 
   const handleSpinFinish = async (finalResults) => {
-    // const userId = await AsyncStorage.getItem("userId");
-    // console.log(userId);
+    const userId = await AsyncStorage.getItem("userId");
     const parCatMod = gameData.map((item, index) => ({
       cat: item.id,
       mod: finalResults[index] || '',

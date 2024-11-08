@@ -16,9 +16,6 @@ const Login = ({ navigation }) => {
     try {
       const result = await login(username, password);
       if (result && result.token) {
-        // Guardar el token y el nombre de usuario en AsyncStorage
-        await AsyncStorage.setItem("userToken", result.token);
-        await AsyncStorage.setItem("username", username);
         navigation.navigate("Home");
       } else {
         alert("Credenciales incorrectas");
