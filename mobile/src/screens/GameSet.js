@@ -46,7 +46,14 @@ const GameSet = () => {
         style={[styles.categoryItem, isSelected && styles.selectedCategory]}
         onPress={() => handleCategoryPress(item)}
       >
-        <Text style={styles.categoryText}>{item.name}</Text>
+        <Text 
+          style={[
+            styles.categoryText, 
+            isSelected ? styles.selectedCategoryText : styles.unselectedCategoryText
+          ]}
+        >
+          {item.name}
+        </Text>
       </TouchableOpacity>
     );
   };
@@ -80,14 +87,15 @@ const GameSet = () => {
         </View>
 
         <TouchableOpacity 
-          style={[
-            styles.startButton, 
-            selectedCategories.length !== 3 && styles.disabledButton
-          ]} 
+          style={[styles.startButton, selectedCategories.length !== 3 && styles.disabledButton]} 
           onPress={handleShowSelected} 
           disabled={selectedCategories.length !== 3}
         >
-          <Text style={styles.buttonText}>Iniciar partida</Text>
+          <Text 
+            style={[styles.buttonText, selectedCategories.length === 3 && styles.selectedButtonText]}
+          >
+            Iniciar partida
+          </Text>
         </TouchableOpacity>
 
         <FooterButtons />
@@ -109,17 +117,18 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 50,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: "#653532"
   },
   card: {
     width: '90%',
     backgroundColor: '#F9F5DC',
-    borderRadius: 10, 
+    borderRadius: 50, 
     padding: 20, 
-    borderColor: '#000000', 
-    borderWidth: 4, 
+    borderColor: '#653532', 
+    borderWidth: 2, 
     marginBottom: 20,
     elevation: 3,
     shadowColor: '#000', 
@@ -143,9 +152,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#B36F6F', 
   },
   categoryText: {
-    fontSize: 18,
+    fontSize: 22,
     textAlign: 'center',
     justifyContent: 'center', 
+    fontWeight: 'bold', 
+  },
+  selectedCategoryText: {
+    color: '#F9F5DC',  // Color de texto cuando la categoría está seleccionada
+  },
+  unselectedCategoryText: {
+    color: '#653532',  // Color de texto cuando la categoría no está seleccionada
   },
   row: {
     flex: 1,
@@ -156,20 +172,26 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     padding: 10,
     marginTop: 10,
-    width: "50%",
+    width: "70%",  // Asegúrate de que el ancho coincida con el tamaño de los otros botones
     alignItems: "center",
+    justifyContent: 'center',
+    paddingVertical: 15, // Asegura que tenga un buen alto
   },
   buttonText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 25,  // Asegúrate de que el tamaño de texto sea el mismo
+    fontWeight: 'bold',
+  },
+  selectedButtonText: {
+    color: '#F9F5DC',  // Color de texto cuando el botón está seleccionado (habilitado)
   },
   disabledButton: {
     backgroundColor: 'gray',
   },
   categoriesAlert: {
-    color: "#000",
+    color: "#653532",
     marginBottom: 30,
-    fontSize: 16,
+    fontSize: 25,
   },
 });
 

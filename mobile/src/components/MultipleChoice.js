@@ -124,11 +124,19 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginBottom: 20,
     textAlign: 'center',
+    padding: 10, // Espacio alrededor del texto
+    borderWidth: 3, // Borde alrededor del texto
+    borderColor: '#653532', // Color del borde
+    borderRadius: 8, // Bordes redondeados
+    backgroundColor: '#F9F5DC', // Fondo suave para el contraste
+    width: '100%', // Aseguramos que ocupe todo el ancho disponible
+    fontWeight: 'bold', // Texto en negrita
+    color: '#653532', // Color del texto que coincide con el borde
   },
   optionButton: {
     backgroundColor: '#B36F6F',
     width: 300,
-    padding: 15,
+    padding: 10,
     borderRadius: 8,
     borderStyle: 'solid',
     borderWidth: 3,
@@ -137,7 +145,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   optionText: {
-    color: '#fff',
+    color: '#F9F5DC',
     fontSize: 18,
     textAlign: 'center',
   },
@@ -180,5 +188,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
 
 export default MultipleChoice;

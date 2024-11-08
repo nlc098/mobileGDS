@@ -1,23 +1,36 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SlotMachine = ({ items }) => {
   const [results, setResults] = useState([]);
   const [spinning, setSpinning] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [userId, setUserId] = useState(null); // Estado para almacenar el userId
+  const [loading, setLoading] = useState(true); // Estado de carga para esperar el userId
   const spinAnimation = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (items.length > 0) {
+    const fetchUserId = async () => {
+      const storedUserId = await AsyncStorage.getItem("userId");
+      setUserId(storedUserId); // Guardamos el userId en el estado
+      setLoading(false); // Cambiamos el estado a 'false' cuando el userId esté listo
+    };
+
+    fetchUserId();
+  }, []); // Solo ejecuta esto una vez cuando el componente se monte
+
+  useEffect(() => {
+    if (items.length > 0 && userId) {
       // Filtrar categorías con gameModes
       const categoriesWithGameModes = items.filter(item => item.gameModes && item.gameModes.length > 0);
       const initialResults = categoriesWithGameModes.length > 0 ? [categoriesWithGameModes[0].gameModes[0]] : [];
       setResults(initialResults);
       spinSlots(categoriesWithGameModes);
     }
-  }, [items]);
+  }, [items, userId]); // Este useEffect se ejecutará cuando 'items' o 'userId' cambien
 
   const spinSlots = (categoriesWithGameModes) => {
     if (spinning) return;
@@ -51,7 +64,7 @@ const SlotMachine = ({ items }) => {
           setSpinning(false);
           setShowResults(true);
 
-          // Esperar 2 segundo antes de navegar
+          // Esperar 2 segundos antes de navegar
           setTimeout(() => {
             logResults(newResults, categoriesWithGameModes);
           }, 2000);
@@ -63,19 +76,23 @@ const SlotMachine = ({ items }) => {
   };
 
   const logResults = (finalResults, categoriesWithGameModes) => {
-    const parCatMod = categoriesWithGameModes.map((item, index) => {
-      const categoryId = item.id; // Obtener la id de la categoría
-      const resultMode = finalResults[index];
-      return {
-        cat: categoryId, // ID de la categoría
-        mod: resultMode   // Modo del juego
-      };
-    });
-
-    navigation.navigate('LoadingGame', {
-      userId: '1234', // Asegúrate de reemplazar con el ID de usuario correcto
-      parCatMod,
-    });
+    if (userId) {
+      const parCatMod = categoriesWithGameModes.map((item, index) => {
+        const categoryId = item.id; // Obtener la id de la categoría
+        const resultMode = finalResults[index];
+        return {
+          cat: categoryId, // ID de la categoría
+          mod: resultMode   // Modo del juego
+        };
+      }).reverse();
+      
+      navigation.navigate('LoadingGame', {
+        userId: userId,
+        parCatMod,
+      });
+    } else {
+      console.error("User ID is not available");
+    }
   };
 
   const translateY = spinAnimation.interpolate({
@@ -87,6 +104,16 @@ const SlotMachine = ({ items }) => {
     inputRange: [0, 1],
     outputRange: [80, 0],
   });
+
+  // Si el userId no está disponible, no renderizamos el SlotMachine
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Cargando...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.slotContainer}>
@@ -123,6 +150,11 @@ const SlotMachine = ({ items }) => {
 
 const styles = StyleSheet.create({
   slotContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loaderContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },

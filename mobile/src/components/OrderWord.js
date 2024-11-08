@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonsContainer: {
-    alignItems: 'center', 
+    alignItems: 'center',
     marginTop: 30,
     marginBottom: 40,
   },
@@ -161,28 +161,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   button: {
-    backgroundColor: '#FFFDD0',
-    padding: 10,
-    marginTop: 40,
-    margin: 5,
+    backgroundColor: '#F9F5DC',
+    padding: 8, // Reducir padding para hacer los botones más pequeños
+    marginTop: 10, // Reducir el espacio entre botones
+    margin: 3, // Reducir el margen entre botones
     borderRadius: 5,
     width: '13%',
-    maxWidth: 50,
+    maxWidth: 40, // Reducir el tamaño máximo de los botones
     borderWidth: 2,
-    borderColor: '#000',
+    borderColor: '#653532',
   },
   buttonText: {
-    color: '#000000',
-    fontSize: 20,
+    color: '#653532',
+    fontSize: 18, // Ajustar el tamaño de la fuente
     textAlign: 'center',
   },
   selectedOrderContainer: {
     marginTop: 20,
     alignItems: 'center',
-  },
-  selectedOrderText: {
-    fontSize: 18,
-    marginBottom: 10,
   },
   selectedOrderButtons: {
     flexDirection: 'row',
@@ -190,18 +186,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   selectedButton: {
-    backgroundColor: '#1F354A',
-    padding: 10,
-    margin: 5,
+    backgroundColor: '#653532',
+    padding: 8, // Reducir padding para los botones seleccionados
+    margin: 3, // Reducir margen
     borderRadius: 5,
     width: '13%',
-    maxWidth: 50,
+    maxWidth: 40, // Reducir tamaño máximo de los botones seleccionados
     borderWidth: 2,
-    borderColor: '#000',
+    borderColor: '#653532',
   },
   selectedButtonText: {
-    color: '#fff',
-    fontSize: 20,
+    color: '#F9F5DC',
+    fontSize: 18, // Ajustar tamaño de texto
     textAlign: 'center',
   },
   buttonRow: {
@@ -246,5 +242,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
 
 export default OrderWord;

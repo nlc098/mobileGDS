@@ -28,7 +28,7 @@ const GameLoad = () => {
   const [answerData, setAnswerData] = useState([]);
 
   const timeUsed = useRef(0);
-  const initialTime = 10; 
+  const initialTime = 30;
   const [timeLeft, setTimeLeft] = useState(initialTime);
 
   const [data, setData] = useState(null);
@@ -40,33 +40,69 @@ const GameLoad = () => {
   const [hintCounter, setHintCounter] = useState(3);
   const [hintButtonEnabled, setHintButtonEnabled] = useState(true);
 
+
+  const [isCheckingAnswer, setIsCheckingAnswer] = useState(false); // Agregar estado para controlar si se está verificando la respuesta
+
+
   useEffect(() => {
     if (responseData) {
-      setAnswerData(responseData); 
-      setData(responseData.gameModes); 
+      setAnswerData(responseData);
+      setData(responseData.gameModes);
       setLoading(false);
     }
   }, [responseData]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (!isCheckingAnswer) { // Solo actualizar el tiempo si no se está verificando la respuesta
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            setCurrentGameIndex(prevIndex => {
+              const nextIndex = prevIndex + 1;
+              if (nextIndex >= Object.keys(data).length) {
+                clearInterval(timer);
+                const { idGameSingle } = answerData;
+                navigation.navigate('GameFinished', { idGameSingle });
+                return prevIndex;
+              }
+              setHints([]);
+              return nextIndex;
+            });
+            return initialTime; // Reinicia el tiempo
+          }
+          return prev - 1;
+        });
+        timeUsed.current += 1;
+      }
+    }, 1000);
   
+    return () => clearInterval(timer);
+  }, [data, navigation, isCheckingAnswer]); 
+  
+
+
   const sendAnswerData = async (answer) => {
     try {
       const gameKeys = Object.keys(data);
       const currentGameKey = gameKeys[currentGameIndex];
       const gameInfo = data[currentGameKey].infoGame[0];
       const { id } = gameInfo;
-      //console.log(answerData.idGameSingle);
+
+      setIsCheckingAnswer(true);  // Pausar el temporizador mientras se verifica la respuesta
+
       const responseData = await sendAnswer(answerData.idGameSingle, userId, answer, id, timeUsed.current);
-      
+
       if (responseData) {
         // Maneja respuesta true
         return responseData;
       } else {
+        setIsCheckingAnswer(false); // Reanudar el tiempo cuando la respuesta es correcta
         // Manejo respuesta false
         return responseData;
       }
     } catch (error) {
-     console.log("Error", error.message);
+      console.log("Error", error.message);
+      setIsCheckingAnswer(false);  // Asegurarse de reanudar en caso de error
     }
   };
 
@@ -75,42 +111,17 @@ const GameLoad = () => {
       const nextIndex = prevIndex + 1;
       if (nextIndex >= Object.keys(data).length) {
         const { idGameSingle } = answerData;
+        setIsCheckingAnswer(false); // Reanudar el tiempo cuando la respuesta es correcta
         navigation.navigate('GameFinished', { idGameSingle }); // Navegar a pantalla de resumen de partida
         return prevIndex; // No cambiar el índice si hemos terminado
       }
+      setIsCheckingAnswer(false)
       setTimeLeft(initialTime); // Reiniciar el tiempo restante
       timeUsed.current = 0;
       setHints([]);
       return nextIndex; // Cambiar al siguiente juego
     });
   };
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          // Cambiar al siguiente juego
-          setCurrentGameIndex(prevIndex => {
-            const nextIndex = prevIndex + 1;
-            if (nextIndex >= Object.keys(data).length) {
-              clearInterval(timer);
-              const { idGameSingle } = answerData;
-              navigation.navigate('GameFinished', { idGameSingle }); // Navegar a pantalla de resumen de partida
-              return prevIndex; // No cambiar el índice si hemos terminado
-            }
-            setHints([]); // Se reinician las pistas
-            return nextIndex; // Cambiar al siguiente juego
-          });
-          return 6; // Reiniciar el tiempo
-        }
-        return prev - 1;
-      });
-      timeUsed.current += 1;
-    }, 1000); // Actualiza cada segundo
-
-    return () => clearInterval(timer); // Limpiar el temporizador al desmontar
-  }, [data, navigation]); // Añadir navegación como dependencia
-
 
   const showNextHint = () => {
     if (data && currentGameIndex < Object.keys(data).length && hintButtonEnabled) {
@@ -119,7 +130,7 @@ const GameLoad = () => {
       const gameInfo = data[currentGameKey].infoGame[0]; // Asignamos de nuevo después de vaciar
 
       const { idModeGame } = gameInfo;
-            
+
       switch (idModeGame) {
         case 'OW':
         case 'GP':
@@ -177,13 +188,13 @@ const GameLoad = () => {
 
         switch (idModeGame) {
           case 'OW':
-            GameComponent = <OrderWord OWinfo={gameInfo} onCorrect={handleCorrectAnswer} veryfyAnswer={sendAnswerData}/>;
+            GameComponent = <OrderWord OWinfo={gameInfo} onCorrect={handleCorrectAnswer} veryfyAnswer={sendAnswerData} />;
             break;
           case 'GP':
-            GameComponent = <GuessPhrase GPinfo={gameInfo} onCorrect={handleCorrectAnswer} veryfyAnswer={sendAnswerData}/>;
+            GameComponent = <GuessPhrase GPinfo={gameInfo} onCorrect={handleCorrectAnswer} veryfyAnswer={sendAnswerData} />;
             break;
           case 'MC':
-            GameComponent = <MultipleChoice MOinfo={gameInfo} onCorrect={handleCorrectAnswer} veryfyAnswer={sendAnswerData}/>;
+            GameComponent = <MultipleChoice MOinfo={gameInfo} onCorrect={handleCorrectAnswer} veryfyAnswer={sendAnswerData} />;
             break;
           default:
             GameComponent = <Text>Modo de juego no reconocido.</Text>;
@@ -194,7 +205,7 @@ const GameLoad = () => {
             {GameComponent}
           </View>
         );
-      }else {
+      } else {
         return <Text>Aún no fue implementado.</Text>;
       }
     } else {
@@ -265,13 +276,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   circle: {
-    width: 70, 
-    height: 70, 
-    borderRadius: 40, 
-    borderWidth: 2, 
-    borderColor: "black", 
-    justifyContent: "center", 
-    alignItems: "center", 
+    width: 70,
+    height: 70,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: "black",
+    justifyContent: "center",
+    alignItems: "center",
   },
   timerText: {
     fontSize: 36,
@@ -339,9 +350,9 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#FFF",
+    backgroundColor: "#F9F5DC",
     borderWidth: 2,
-    borderColor: "#653532", 
+    borderColor: "#653532",
     position: "absolute",
     alignItems: "center",
     justifyContent: "center",
