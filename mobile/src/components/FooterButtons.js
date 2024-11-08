@@ -27,10 +27,10 @@ const FooterButtons = () => {
         <Icon name="home" size={35} color={isCurrentRoute('Home') ? '#B36F6F' : '#3B3B3B'} />
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.button, isCurrentRoute('Page3') && styles.activeButton]} 
-        onPress={() => navigation.navigate('Page3')}
+        style={[styles.button, isCurrentRoute('Statistics') && styles.activeButton]} 
+        onPress={() => navigation.navigate('Statistics')}
       >
-        <Icon name="bar-chart" size={35} color={isCurrentRoute('Page3') ? '#B36F6F' : '#3B3B3B'} />
+        <Icon name="bar-chart" size={35} color={isCurrentRoute('Statistics') ? '#B36F6F' : '#3B3B3B'} />
       </TouchableOpacity>
     </View>
   );
