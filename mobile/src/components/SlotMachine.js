@@ -160,12 +160,17 @@ const styles = StyleSheet.create({
   },
   slotRow: {
     flexDirection: 'row',
+    borderWidth: 2,      // Borde
+    borderColor: 'black',// Color del borde
+    backgroundColor: '#653532', // Fondo blanco
+    padding: 10,          // Espaciado interno (opcional)
+    borderRadius: 10,     // Bordes redondeados (opcional)
   },
   slotBox: {
     width: 100,
     height: 80,
-    borderWidth: 2,
-    borderColor: 'black',
+    borderWidth: 4,
+    borderColor: '#F9F5DC',
     justifyContent: 'center',
     alignItems: 'center',
     margin: 5,
@@ -173,6 +178,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   slotTextContainer: {
+    backgroundColor:"#B36F6F",
     position: 'absolute',
     width: '100%',
     height: '100%',
@@ -180,14 +186,22 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
   },
   slotText: {
+    color: "#F9F5DC",
     fontSize: 48,
   },
   resultContainer: {
-    marginTop: 20,
+    marginTop:5,
+    borderWidth: 2,      // Borde
+    borderColor: 'black',// Color del borde
+    backgroundColor: '#653532', // Fondo blanco
+    padding: 10,          // Espaciado interno (opcional)
+    borderRadius: 10,     // Bordes redondeados (opcional)
   },
   resultText: {
     fontSize: 30,
-  }, 
-});
+    color: '#F9F5DC'
+  },
+}); 
+
 
 export default SlotMachine;
