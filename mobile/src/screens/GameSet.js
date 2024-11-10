@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
+import { useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, ImageBackground, FlatList, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; // Importa el hook de navegación
+import { useNavigation } from '@react-navigation/native';
 import HeaderMain from '../components/HeaderMain';
 import FooterButtons from '../components/FooterButtons';
 import { getCategories } from '../CallsAPI';
 
 const GameSet = () => {
-  const navigation = useNavigation(); // Usa el hook para obtener la instancia de navegación
+  const route = useRoute();
+  const navigation = useNavigation();
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const { gameMode } = route.params || {};
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -63,7 +66,12 @@ const GameSet = () => {
     const selectedCategoryID = categories
       .filter(category => selectedCategories.includes(category.id))
       .map(category => category.id);
-    navigation.navigate('IndividualGameSet', { selectedCategoryID }); // Redirige y envía los nombres de las categorías seleccionadas
+
+      if (gameMode === 'individual') {
+        navigation.navigate('IndividualGameSet', { selectedCategoryID });
+      } else if (gameMode === 'multiplayer') {
+        navigation.navigate('MultiplayerLobby', { selectedCategoryID });
+      }
   };
 
   return (

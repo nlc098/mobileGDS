@@ -9,6 +9,8 @@ import Home from './screens/Home';
 import Statistics from './screens/Statistics';
 import PerfilUser from './screens/PerfilUser';
 import IndividualGameSet from './screens/IndividualGameSet';
+import MultiplayerGameSet from './screens/MultiplayerGameSet';
+import MultiplayerLobby from './screens/MultiplayerLobby';
 import GameSet from './screens/GameSet';
 import GameLoad from './screens/GameLoad';
 import LoadingGame from './screens/LoadingGame';
@@ -101,6 +103,16 @@ const AppNavigator = () => {
       <Stack.Screen
         name="IndividualGameSet"
         component={IndividualGameSet}
+        options={{ headerShown: false }}
+      />
+       <Stack.Screen
+        name="MultiplayerGameSet"
+        component={MultiplayerGameSet}
+        options={{ headerShown: false }}
+      />
+        <Stack.Screen
+        name="MultiplayerLobby"
+        component={MultiplayerLobby}
         options={{ headerShown: false }}
       />
       <Stack.Screen

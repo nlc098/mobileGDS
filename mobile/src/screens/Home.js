@@ -7,14 +7,22 @@ import MainMenu from '../components/MainMenu';
 const Home = () => {
   const navigation = useNavigation();
 
+  const handleNavigation = (gameMode) => {
+    // Navegar a la pantalla 'GameSet' y pasar el parámetro 'gameMode'
+    navigation.navigate('GameSet', { gameMode });
+  };
+
   return (
     <MainMenu>
         <Logo />
-        <TouchableOpacity style={buttonStyles.buttonfullwidth}
-                          onPress={() => navigation.navigate('GameSet')}>
+        <TouchableOpacity 
+          style={buttonStyles.buttonfullwidth}
+          onPress={() => handleNavigation('individual')}>
           <Text style={buttonStyles.buttonText}>Partida Individual</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={buttonStyles.buttonfullwidth}>
+        <TouchableOpacity 
+          style={buttonStyles.buttonfullwidth}
+          onPress={() => handleNavigation('multiplayer')}>
           <Text style={buttonStyles.buttonText}>Partida Multijugador</Text>
         </TouchableOpacity>
     </MainMenu>
