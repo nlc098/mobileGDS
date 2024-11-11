@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Pressable, Image, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { login } from "../CallsAPI";
+import { login } from "../CallsAPI";  // Asumimos que esta función maneja la autenticación
+import { useSocket } from '../WebSocketProvider';  // Importa el hook de tu contexto
 import { buttonStyles } from "../styles/buttons";
 import { textStyles } from "../styles/texts";
 import BackImage from '../styles/BackImage';
@@ -12,10 +13,20 @@ const Login = ({ navigation }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  const { connect } = useSocket();  // Accede a la función connect del contexto
+
   const handleLogin = async () => {
     try {
+      // Realizar login
       const result = await login(username, password);
       if (result && result.token) {
+        // Guardar el username en AsyncStorage
+        await AsyncStorage.setItem("username", username);
+
+        // Conectar al WebSocket usando el username después de un login exitoso
+        connect(username); // Esto establece la conexión WebSocket
+
+        // Navegar a la pantalla 'Home' después de iniciar sesión correctamente
         navigation.navigate("Home");
       } else {
         alert("Credenciales incorrectas");
@@ -59,7 +70,7 @@ const Login = ({ navigation }) => {
           <Text style={styles.buttontext}>Registrarse</Text>
         </Pressable>
       </View>
-      </BackImage>
+    </BackImage>
   );
 };
 
@@ -83,7 +94,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     width: "100%",
-    marginTop:30,
+    marginTop: 30,
   },
   buttontext: {
     color: "#FFF",
