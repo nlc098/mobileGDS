@@ -9,16 +9,14 @@ import { SocketContext } from '../WebSocketProvider';  // Asegúrate de tener es
 
 const Config = () => {
   const navigation = useNavigation();
-  const { socket } = useContext(SocketContext);  // Accede al WebSocket desde el contexto
+  const { disconnect } = useContext(SocketContext);  // Accede al WebSocket desde el contexto
 
   const handleLogout = async () => {
     try {
       const username = await AsyncStorage.getItem("username");
       await logout(username);  // Realizas el logout de la API
-      if (socket) {
-        socket.disconnect();  // Desconectas el WebSocket
+        disconnect(username);  // Desconectas el WebSocket
         console.log("Desconectado del WebSocket");
-      }
       navigation.navigate('Login');  // Navegas a la pantalla de Login
     } catch (error) {
       console.error("Error al cerrar sesión:", error);

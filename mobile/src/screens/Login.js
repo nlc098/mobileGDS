@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { View, Text, TextInput, Pressable, Image, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login } from "../CallsAPI";  // Asumimos que esta función maneja la autenticación
-import { useSocket } from '../WebSocketProvider';  // Importa el hook de tu contexto
+import { SocketContext } from '../WebSocketProvider';  // Importa el hook de tu contexto
 import { buttonStyles } from "../styles/buttons";
 import { textStyles } from "../styles/texts";
 import BackImage from '../styles/BackImage';
@@ -13,7 +13,7 @@ const Login = ({ navigation }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const { connect } = useSocket();  // Accede a la función connect del contexto
+  const { connect } = useContext(SocketContext);
 
   const handleLogin = async () => {
     try {
