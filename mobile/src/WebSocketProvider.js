@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
+import 'text-encoding';
 
 // Crear el contexto
 export const SocketContext = createContext();

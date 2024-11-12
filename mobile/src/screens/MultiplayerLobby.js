@@ -1,57 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { SocketContext } from '../WebSocketProvider';
 
 const GameLobby = () => {
-    const [players, setPlayers] = useState([]);
-    const [search, setSearch] = useState('');
-    const [filteredPlayers, setFilteredPlayers] = useState([]);
+    const [players, setPlayers] = useState([]); // Lista de jugadores
+    const [search, setSearch] = useState(''); // Texto de búsqueda
+    const [filteredPlayers, setFilteredPlayers] = useState([]); // Lista de jugadores filtrados
+    const { users } = useContext(SocketContext); // Obtén los usuarios del contexto del WebSocket
 
-    useEffect(() => {
-        fetchPlayers();
-    }, []);
-
-    const fetchPlayers = async () => {
-        // Simulación de llamada al endpoint para obtener los usuarios conectados
-        const fetchedPlayers = [
-            { id: 1, name: 'pepe' },
-            { id: 2, name: 'user' },
-            // Agrega más usuarios según sea necesario
-        ];
-        setPlayers(fetchedPlayers);
-        setFilteredPlayers(fetchedPlayers);
-    };
-
+    // Filtrado de jugadores basado en la búsqueda
     const handleSearch = (text) => {
         setSearch(text);
         if (text) {
-            const filtered = players.filter(player => 
-                player.name.toLowerCase().includes(text.toLowerCase())
+            const filtered = players.filter(player =>
+                player.toLowerCase().includes(text.toLowerCase()) // Filtra por nombre
             );
-            setFilteredPlayers(filtered);
+            setFilteredPlayers(filtered); // Actualiza la lista filtrada
         } else {
-            setFilteredPlayers(players);
+            setFilteredPlayers(players); // Muestra todos los jugadores si no hay búsqueda
         }
     };
 
-    const renderPlayer = ({ item }) => (
-        <View style={styles.playerContainer}>
-            <View style={styles.playerInfo}>
-                <Icon name="account-circle" size={40} color="#77492f" />
-                <Text style={styles.playerText}>#{item.id} {item.name}</Text>
+    // Actualizar la lista de jugadores cuando los usuarios cambian
+    useEffect(() => {
+        console.log("Usuarios conectados: ", users);  // Verifica la estructura de los datos
+        setPlayers(users);  // Guardamos la lista de usuarios
+        setFilteredPlayers(users);  // Actualizamos la lista filtrada cuando 'users' cambia
+    }, [users]);
+
+    // Renderizar un jugador en la lista
+    const renderPlayer = ({ item }) => {
+        return (
+            <View style={styles.playerContainer}>
+                <View style={styles.playerInfo}>
+                    <Icon name="account-circle" size={40} color="#77492f" />
+                    {/* Si item es una cadena (nombre del jugador), se renderiza aquí */}
+                    <Text style={styles.playerText}>{item}</Text>
+                </View>
+                <View style={styles.playerActions}>
+                    <TouchableOpacity style={styles.actionButton}>
+                        <Icon name="person-add" size={20} color="#77492f" />
+                        <Text style={styles.actionText}>Invitar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.actionButton}>
+                        <Icon name="info" size={20} color="#77492f" />
+                        <Text style={styles.actionText}>Detalles</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-            <View style={styles.playerActions}>
-                <TouchableOpacity style={styles.actionButton}>
-                    <Icon name="person-add" size={20} color="#77492f" />
-                    <Text style={styles.actionText}>Invitar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton}>
-                    <Icon name="info" size={20} color="#77492f" />
-                    <Text style={styles.actionText}>Detalles</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
+        );
+    };
 
     return (
         <View style={styles.container}>
@@ -69,9 +68,9 @@ const GameLobby = () => {
                 <Icon name="sort" size={24} color="#77492f" />
             </View>
             <FlatList
-                data={filteredPlayers}
-                renderItem={renderPlayer}
-                keyExtractor={(item) => item.id.toString()}
+                data={filteredPlayers} // Usamos los jugadores filtrados
+                renderItem={renderPlayer} // Usamos la función renderPlayer
+                keyExtractor={(item, index) => index.toString()} // Asegúrate de tener un identificador único
                 style={styles.playerList}
             />
         </View>
