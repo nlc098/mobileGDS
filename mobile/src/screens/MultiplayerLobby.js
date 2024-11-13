@@ -7,7 +7,11 @@ const GameLobby = () => {
     const [players, setPlayers] = useState([]); // Lista de jugadores
     const [search, setSearch] = useState(''); // Texto de búsqueda
     const [filteredPlayers, setFilteredPlayers] = useState([]); // Lista de jugadores filtrados
-    const { users } = useContext(SocketContext); // Obtén los usuarios del contexto del WebSocket
+    const { users, sendInvitation } = useContext(SocketContext); // Obtén los usuarios del contexto del WebSocket
+
+    const invitePlayer = (username) => {
+        sendInvitation(username);
+    }
 
     // Filtrado de jugadores basado en la búsqueda
     const handleSearch = (text) => {
@@ -29,6 +33,7 @@ const GameLobby = () => {
         setFilteredPlayers(users);  // Actualizamos la lista filtrada cuando 'users' cambia
     }, [users]);
 
+
     // Renderizar un jugador en la lista
     const renderPlayer = ({ item }) => {
         return (
@@ -39,7 +44,8 @@ const GameLobby = () => {
                     <Text style={styles.playerText}>{item}</Text>
                 </View>
                 <View style={styles.playerActions}>
-                    <TouchableOpacity style={styles.actionButton}>
+                    <TouchableOpacity style={styles.actionButton}
+                                      onPress={invitePlayer(item)}>
                         <Icon name="person-add" size={20} color="#77492f" />
                         <Text style={styles.actionText}>Invitar</Text>
                     </TouchableOpacity>
