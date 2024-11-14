@@ -14,8 +14,11 @@ const Config = () => {
   const handleLogout = async () => {
     try {
       const username = await AsyncStorage.getItem("username");
+      // Recuperar el objeto userObj de AsyncStorage
+      const userObjString = await AsyncStorage.getItem("userObj");
+      const userObj = JSON.parse(userObjString); // Parsear el objeto
       await logout(username);  // Realizas el logout de la API
-        disconnect(username);  // Desconectas el WebSocket
+        disconnect(userObj);  // Desconectas el WebSocket
         console.log("Desconectado del WebSocket");
       navigation.navigate('Login');  // Navegas a la pantalla de Login
     } catch (error) {

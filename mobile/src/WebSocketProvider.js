@@ -1,99 +1,71 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
-import "text-encoding";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import 'text-encoding';
 export const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => {
-    const [username, setUsername] = useState('');
+    const [invitation, setInvitation] = useState(null);
     const [users, setUsers] = useState([]);
-    const [isInvitationSended, setIsInvitationSended] = useState(false);
-    const [isConnected, setIsConnected] = useState(false); // Estado para verificar conexión
+    
+    const [invitationCount, setInvitationCount] = useState(0);
+    const [invitationCollection, setInvitationCollection] = useState([]);
 
-    const hostUsername = AsyncStorage.getItem("username");
+    // Stomp client socket
+    const client = useRef(null);
 
     useEffect(() => {
-        // Si la conexión está activa, podemos enviar invitaciones.
-        if (isConnected) {
-            console.log("Conexión STOMP establecida.");
+        AsyncStorage.setItem("connectedUsers", JSON.stringify(users));
+    }, [users]);
+
+    useEffect(() => {
+        if(invitationCollection.length > 0){
+            console.log("Nueva invitacion recibida!");
+            console.log(invitationCollection);
         }
-    }, [isConnected]);
+    }, [invitationCollection]);
 
-    const client = Stomp.over(() => new SockJS('http://localhost:8080/ws'));
+    const connect = (dtoUserOnline) => {
+        client.current = Stomp.over(() => new SockJS('http://192.168.1.11:8080/ws'));
 
-
-    const connect = (username) => {
-        client.current = new Client({
-            webSocketFactory: () => socket,
-            onConnect: () => {
-                setIsConnected(true); // Marcar como conectado
-
-                client.current.subscribe('/topic/lobby', message => {
-                    setUsers(JSON.parse(message.body)); // Actualizar usuarios conectados
-                });
-                client.current.publish({
-                    destination: '/app/join',
-                    body: username
-                });
-
-                // Escuchar notificaciones de invitación
-                client.current.subscribe("/game/invitations/" + username, (message) => {
-                    console.log("invitacion enviada context");
-                    const invitation = JSON.parse(message.body);
-                    console.log(invitation);
-                });
-
-                // Escuchar respuestas a las invitaciones
-                client.current.subscribe("/game/invitations/responses/" + username, (message) => {
-                    const response = JSON.parse(message.body);
-                    console.log(response);
-                });
-            },
-            onDisconnect: () => {
-                setIsConnected(false); // Marcar como desconectado
-                console.log("Conexión STOMP cerrada.");
-            },
-            onStompError: (frame) => {
-                console.error("Error STOMP:", frame);
-            }
-        });
-        client.current.activate();
-    };
-    
-    const disconnect = (username) => {
-        if (client.current) {
-            client.current.publish({
-                destination: '/app/leave',
-                body: username
-            });
-            client.current.deactivate();
-        }
-    };
-
-    const sendInvitation = (recipient) => {
-        if (!isConnected) {
-            console.log("No estás conectado, no se puede enviar la invitación.");
+        if(dtoUserOnline === null){
+            console.error("DtoUserOnline NULL");
             return;
         }
 
-        const invitation = {
-            gameId: "2222",
-            fromPlayerId: hostUsername,
-            toPlayerId: recipient
-        };
+        client.current.connect({}, () => {
+            console.log("Usuario conectado!");
 
-        // Enviar la invitación solo si client.current está definido
+            // Suscripción a usuarios en el lobby
+            client.current.subscribe('/topic/lobby', (message) => {
+                console.log(message.body);
+                setUsers(JSON.parse(message.body)); 
+            });
+
+            // Suscripcion a cualquier tipo de invitaciones
+            client.current.subscribe(`/topic/lobby/${dtoUserOnline.userId}`, (message) => {
+                const invitationBody = JSON.parse(message.body);
+                console.log(invitationBody);
+                setInvitation(invitationBody);
+                //setInvitationCollection(invitationBody);
+            });
+
+            // Unirse al lobby con el usuario
+            client.current.send('/app/join', {}, JSON.stringify(dtoUserOnline));
+        });
+    };
+
+    const disconnect = (dtoUserOnline) => {
         if (client.current) {
-            client.current.send(`/app/invite/${recipient}`, {}, JSON.stringify(invitation));
-            console.log(`Invitación enviada a ${recipient}`);
-            setIsInvitationSended(true); // Actualizar estado de invitación enviada
+            console.log("Usuario desconectado!");
+            client.current.send('/app/leave', {}, JSON.stringify(dtoUserOnline));
+            client.current.disconnect();
         }
-    }
+    };
 
     return (
-        <SocketContext.Provider value={{connect, disconnect, sendInvitation, users, isInvitationSended}}>
+        <SocketContext.Provider value={{ connect, disconnect, users, invitation, client, invitationCount, setInvitationCount, invitationCollection, setInvitationCollection }}>
             {children}
         </SocketContext.Provider>
     );

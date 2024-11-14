@@ -21,10 +21,12 @@ const Login = ({ navigation }) => {
       const result = await login(username, password);
       if (result && result.token) {
         // Guardar el username en AsyncStorage
-        await AsyncStorage.setItem("username", username);
+       // await AsyncStorage.setItem("username", username);
 
-        // Conectar al WebSocket usando el username después de un login exitoso
-        connect(username); // Esto establece la conexión WebSocket
+        // Recuperar el objeto userObj de AsyncStorage
+        const userObjString = await AsyncStorage.getItem("userObj");
+        const userObj = JSON.parse(userObjString); // Parsear el objeto
+        connect(userObj); // Esto establece la conexión WebSocket
 
         // Navegar a la pantalla 'Home' después de iniciar sesión correctamente
         navigation.navigate("Home");

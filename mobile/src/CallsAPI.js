@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.0.106:8080/api";
+const API_URL = "http://192.168.1.11:8080/api";
 
 // Función para decodificar el JWT, retorna el userId
 const decodeJWT = (token) => {
@@ -59,11 +59,22 @@ class ApiService {
       // Paso 1: Decodificar el JWT para obtener el payload
       const jwtDecoded = decodeJWT(token);
       const userId = jwtDecoded.userId
-      console.log(userId)
+      const email = jwtDecoded.email
+     
       // Paso 2: Guardar el JWT y el userId en AsyncStorage
       await AsyncStorage.setItem("userId", userId.toString());
+      await AsyncStorage.setItem("email", email.toString());
       await AsyncStorage.setItem("userToken", token);
       await AsyncStorage.setItem("username", username);
+      
+       // Agrega el usuario a la lista de usuarios conectados usando socket 
+       // creo el Dto en lugar del username y id
+       const dtoUserOnline = {
+            username: username,
+            userId: userId,
+            email: email
+        };
+       await AsyncStorage.setItem("userObj", JSON.stringify(dtoUserOnline));
       return data;
   
     } catch (error) {
