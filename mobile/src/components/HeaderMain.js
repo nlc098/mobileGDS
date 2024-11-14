@@ -11,9 +11,17 @@ const HeaderMain = () => {
   return (
     <View style={styles.header}>
       <Image source={Logo} style={styles.logo} resizeMode="contain" />
-      <TouchableOpacity style={styles.settingsButton} onPress={() => navigation.navigate('Config')}>
-        <Icon name="settings-outline" size={40} color="#000000" />
-      </TouchableOpacity>
+      <View style={styles.buttonsContainer}>
+        {/* Botón de invitaciones */}
+        <TouchableOpacity style={styles.invitationButton} onPress={() => navigation.navigate('InvitationScreen')}>
+          <Icon name="mail-outline" size={40} color="#000000" />
+        </TouchableOpacity>
+
+        {/* Botón de configuraciones */}
+        <TouchableOpacity style={styles.settingsButton} onPress={() => navigation.navigate('Config')}>
+          <Icon name="settings-outline" size={40} color="#000000" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -35,15 +43,25 @@ const styles = StyleSheet.create({
     width: 200, // Ajusta el ancho de la imagen según tus necesidades
     height: '80%', // Ajusta la altura de la imagen para que se ajuste al header
   },
+  buttonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  invitationButton: {
+    width: 70, // Ancho del botón
+    height: 70, // Alto del botón
+    justifyContent: 'center', // Centrar el ícono
+    alignItems: 'center', // Centrar el ícono
+    backgroundColor: 'transparent', // Hacer el fondo del botón transparente
+    marginRight: 10, // Espacio entre los botones
+  },
   settingsButton: {
     width: 70, // Ancho del botón
     height: 70, // Alto del botón
     justifyContent: 'center', // Centrar el ícono
     alignItems: 'center', // Centrar el ícono
     backgroundColor: 'transparent', // Hacer el fondo del botón transparente
-    borderWidth: 4, // Ancho del borde
-    borderColor: '#000000', // Color del borde
-    borderRadius: 10, // Bordes redondeados (opcional)
+
   },
 });
 

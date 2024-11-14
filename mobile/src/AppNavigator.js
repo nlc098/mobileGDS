@@ -17,6 +17,8 @@ import LoadingGame from './screens/LoadingGame';
 import GameFinished from './screens/GameFinished';
 import Config from './screens/Config';
 import RestorePassword from './screens/RestorePassword';
+import InvitationScreen from './screens/InvitationScreen';
+import Waiting from './screens/Waiting';
 
 const Stack = createNativeStackNavigator();
 
@@ -143,6 +145,16 @@ const AppNavigator = () => {
       <Stack.Screen
         name="RestorePassword"
         component={RestorePassword}
+        options={{ headerShown: false }}
+      />
+       <Stack.Screen
+        name="InvitationScreen"
+        component={InvitationScreen}
+        options={{ headerShown: false }}
+      />
+         <Stack.Screen
+        name="Waiting"
+        component={Waiting}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

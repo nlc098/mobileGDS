@@ -51,6 +51,8 @@ export const SocketProvider = ({ children }) => {
                 //setInvitationCollection(invitationBody);
             });
 
+
+
             // Unirse al lobby con el usuario
             client.current.send('/app/join', {}, JSON.stringify(dtoUserOnline));
         });
@@ -65,7 +67,7 @@ export const SocketProvider = ({ children }) => {
     };
 
     return (
-        <SocketContext.Provider value={{ connect, disconnect, users, invitation, client, invitationCount, setInvitationCount, invitationCollection, setInvitationCollection }}>
+        <SocketContext.Provider value={{ connect, disconnect, users, invitation,setInvitation, client, invitationCount, setInvitationCount, invitationCollection, setInvitationCollection }}>
             {children}
         </SocketContext.Provider>
     );
