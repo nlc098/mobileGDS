@@ -6,26 +6,26 @@ import { useNavigation } from '@react-navigation/native';
 
 const InvitationScreen = () => {
   const [invitations, setInvitations] = useState([]);
-  const { invitation, client  } = useContext(SocketContext);
+  const { invitationCollection, setInvitationCollection, client } = useContext(SocketContext); // Usamos invitationCollection desde el contexto
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (invitation && invitation.usernameHost && invitation.userIdHost) {
-      console.log("Nueva invitación recibida:", invitation);
+    if (invitationCollection.length > 0) {
+      console.log("Nueva invitación recibida:", invitationCollection);
       setInvitations((prevInvitations) => [
         ...prevInvitations,
-        { 
-          id: invitation.id || Date.now().toString(),
-          usernameHost: invitation.usernameHost, 
-          message: invitation.message, 
+        ...invitationCollection.map(invitation => ({
+          id: invitation.id || Date.now().toString(), // Genera un id único si no existe
+          usernameHost: invitation.usernameHost,
+          message: invitation.message,
           userIdHost: invitation.userIdHost,
           userIdGuest: invitation.userIdGuest,
-          status: 'Pendiente' 
-        }
+          status: 'Pendiente'
+        }))
       ]);
+      setInvitationCollection([]); // Limpiar la colección de invitaciones después de procesarlas
     }
-  }, [invitation]);
-  
+  }, [invitationCollection]);
 
   // Función para actualizar la respuesta de la invitación y enviarla por WebSocket
   const setInviteResponse = async (accepted, invitation) => {
@@ -39,13 +39,13 @@ const InvitationScreen = () => {
 
       const invitationData = {
         action: "INVITE_RESPONSE",
-        userIdHost: invitation.userIdHost, // Desde los datos de la invitación
-        userIdGuest: invitation.userIdGuest, // Desde los datos de la invitación
-        usernameHost: invitation.usernameHost, // Desde los datos de la invitación
-        usernameGuest: usernameGuest, // Recuperado de AsyncStorage
+        userIdHost: invitation.userIdHost,
+        userIdGuest: invitation.userIdGuest,
+        usernameHost: invitation.usernameHost,
+        usernameGuest: usernameGuest,
         accepted: accepted,
         message: accepted ? `Aceptaste la invitación de ${invitation.usernameHost}` : `Rechazaste la invitación de ${invitation.usernameHost}`,
-        gameId: "", // Esto no aplica en este punto
+        gameId: "",
       };
 
       console.log('Respuesta actualizada:', invitationData);
@@ -76,8 +76,7 @@ const InvitationScreen = () => {
         // Redirige a la pantalla de espera
        // navigation.navigate('Waiting');
     }
-};
-
+  };
 
   // Función para rechazar invitaciones
   const handleReject = (invitationId) => {
@@ -123,7 +122,7 @@ const InvitationScreen = () => {
       ) : (
         <FlatList
           data={invitations}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()} // Usamos el id como clave única
           renderItem={renderInvitation}
         />
       )}
