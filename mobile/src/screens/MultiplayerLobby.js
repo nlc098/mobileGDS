@@ -5,6 +5,7 @@ import { SocketContext } from '../WebSocketProvider';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import HeaderMain from '../components/HeaderMain';
 import { useNavigation } from '@react-navigation/native';
+import { createGame } from '../CallsAPI';
 
 const GameLobby = () => {
     const [players, setPlayers] = useState([]); // Lista de jugadores
@@ -77,16 +78,6 @@ const GameLobby = () => {
         console.log('Datos de la invitación actualizados:', invitationData);
     }
 
-    // Función para actualizar la respuesta de la invitación
-    function setInviteResponse(accepted, usernameGuest, userIdGuest, message) {
-        invitationData.action = "INVITE_RESPONSE";
-        invitationData.userIdGuest = userIdGuest;
-        invitationData.usernameGuest = usernameGuest;
-        invitationData.accepted = accepted;
-        invitationData.message = message;
-        console.log('Respuesta actualizada:', invitationData);
-    }
-
     // Función para actualizar la respuesta del ID de la partida
     function setResponseIdGame(idGame, message) {
         invitationData.action = "RESPONSE_IDGAME";
@@ -95,45 +86,6 @@ const GameLobby = () => {
         console.log('Respuesta actualizada:', invitationData);
     }
 
-    // se ejecuta cuando el guest acepta la partida
-    // Se crea el game mediante socket
-    const handleCreateGame = async () => {
-        let idGame = '';
-        try {
-            const userId = await AsyncStorage.getItem("userId");
-            const username = await AsyncStorage.getItem("username");
-
-            if (userId && username) {
-                const userHost = {
-                    username: username,
-                    userId: userId
-                };
-
-                const userGuest = {
-                    username: selectedItem.username,
-                    userId: selectedItem.id
-                };
-
-                const createGameBody = {
-                    userHost: userHost,
-                    userGuest: userGuest
-                };
-
-                const response = await axiosInstance.post('/game-multi/v1/create', createGameBody, { requiresAuth: true });
-                idGame = response.data;
-                setGameId(idGame);
-                console.log("Partida creada! -> " + `idGame: ${JSON.stringify(idGame, null, 2)}`);
-
-                console.log("Multiplayer Data -> " + JSON.stringify(messageSocket, null, 2));
-
-                client.current.send("/app/game/create", {}, JSON.stringify(messageSocket));
-            } else {
-                console.error("No se pudo obtener el userId o username");
-            }
-        } catch (error) {
-            console.error('Error obteniendo datos del juego:', error);
-        }
-    };
 
     // Filtrado de jugadores basado en la búsqueda por username
     const handleSearch = (text) => {
@@ -148,12 +100,14 @@ const GameLobby = () => {
         }
     };
 
-    // Actualizar la lista de jugadores cuando los usuarios cambian
     useEffect(() => {
         console.log("Usuarios conectados: ", users);  // Verifica la estructura de los datos
-        setPlayers(users);  // Guardamos la lista de objetos userObj
-        setFilteredPlayers(users);  // Actualizamos la lista filtrada cuando 'users' cambia
-    }, [users]);
+        // Filtra al jugador actual de la lista
+        const filteredPlayers = users.filter(player => player.userId !== userObj.userId);
+        setPlayers(filteredPlayers);  // Guardamos la lista de objetos userObj sin el jugador actual
+        setFilteredPlayers(filteredPlayers);  // Actualizamos la lista filtrada cuando 'users' cambia
+    }, [users, userObj.userId]);
+    
 
     useEffect(() => {
         if (invitation) {
@@ -209,17 +163,53 @@ const GameLobby = () => {
     }
     
     const handleResponse = (invitation) => {
+        // Verificar si la invitación fue aceptada o rechazada
         if (invitation.accepted === false) {
-   
-            console.log("Invitación rechazada.");
+          console.log("Invitación rechazada.");
         } else {
-            // Si la invitación es aceptada, maneja la lógica correspondiente
-            console.log("Invitación aceptada. Continuando con el juego.");
+          // Si la invitación es aceptada, continuamos con la creación del juego
+          console.log("Invitación aceptada. Continuando con el juego.");
+      
+          // Extraemos los datos necesarios de la invitación
+          const userHost = {
+            username: invitation.usernameHost,
+            userId: invitation.userIdHost
+          };
+      
+          const userGuest = {
+            username: invitation.usernameGuest,
+            userId: invitation.userIdGuest
+          };
+      
+          // Llamar a la función para crear el juego, pasando los datos del anfitrión e invitado
+          createGame(userHost, userGuest)
+            .then(response => {
+              if (response && response.gameid) {
+                const gameId = response.gameid;
+                console.log("Juego creado con éxito! ID del juego: ", gameId);
+      
+                // Enviar el mensaje de creación del juego a través del WebSocket
+                const messageSocket = {
+                  gameId: gameId,
+                  userHost: userHost,
+                  userGuest: userGuest
+                };
+      
+                console.log("Datos para WebSocket -> ", JSON.stringify(messageSocket, null, 2));
+                client.current.send("/app/game/create", {}, JSON.stringify(messageSocket)); // Enviar mensaje al WebSocket
+              } else {
+                console.error("Error: No se recibió un gameid válido en la respuesta.");
+              }
+            })
+            .catch(error => {
+              console.error("Error al crear el juego: ", error);
+            });
         }
-    
-        // El resto de tu código para manejar la respuesta
+      
+        // Imprimir la respuesta de la invitación para depuración
         console.log('Respuesta a la invitación:', invitation);
-    };
+      };
+      
     
     
 // Renderizar un jugador en la lista

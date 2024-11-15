@@ -14,14 +14,16 @@ const InvitationScreen = () => {
       console.log("Nueva invitación recibida:", invitationCollection);
       setInvitations((prevInvitations) => [
         ...prevInvitations,
-        ...invitationCollection.map(invitation => ({
-          id: invitation.id || Date.now().toString(), // Genera un id único si no existe
-          usernameHost: invitation.usernameHost,
-          message: invitation.message,
-          userIdHost: invitation.userIdHost,
-          userIdGuest: invitation.userIdGuest,
-          status: 'Pendiente'
-        }))
+        ...invitationCollection
+          .filter(invitation => invitation.userIdGuest !== invitation.userIdHost) // Filtrar autoinvitaciones
+          .map(invitation => ({
+            id: invitation.id || Date.now().toString(), // Genera un id único si no existe
+            usernameHost: invitation.usernameHost,
+            message: invitation.message,
+            userIdHost: invitation.userIdHost,
+            userIdGuest: invitation.userIdGuest,
+            status: 'Pendiente'
+          }))
       ]);
       setInvitationCollection([]); // Limpiar la colección de invitaciones después de procesarlas
     }

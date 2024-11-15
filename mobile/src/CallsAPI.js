@@ -388,7 +388,48 @@ async logout(username) {
       throw new Error(error.message);
     }
   }
-}
+    // Método para crear un juego multijugador
+    async createGame(userHost, userGuest) {
+      try {
+        const token = await this.getToken(); // Obtener el token del usuario
+        if (!token) {
+          throw new Error("Token no encontrado");
+        }
+  
+        const response = await fetch(`${API_URL}/game-multi/v1/create/`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userHost: {
+              username: userHost.username,
+              userId: userHost.userId
+            },
+            userGuest: {
+              username: userGuest.username,
+              userId: userGuest.userId
+            }
+          }),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Error al crear el juego");
+        }
+  
+        const data = await response.json();
+        return data; // Devolvemos el ID del juego creado (gameid)
+      } catch (error) {
+        console.error("Error al crear el juego:", error.message);
+        throw new Error(error.message);
+      }
+    }
+  
+    
+  }
+
+
 
 const apiService = new ApiService();
 
@@ -549,5 +590,15 @@ export const checkTokenExpiration = async (navigation) => {
     console.error('Error al verificar la expiración del token:', error);
     // En caso de error, redirigimos al login para evitar problemas
     navigation.navigate('Login');
+  }
+};
+
+export const createGame = async (userHost, userGuest) => {
+  try {
+    const data = await apiService.createGame(userHost, userGuest);
+    return data; 
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
   }
 };
