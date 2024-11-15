@@ -182,10 +182,11 @@ const GameLobby = () => {
           };
       
           // Llamar a la función para crear el juego, pasando los datos del anfitrión e invitado
+          console.log("hola")
           createGame(userHost, userGuest)
             .then(response => {
-              if (response && response.gameid) {
-                const gameId = response.gameid;
+              if (response) {
+                const gameId = response;
                 console.log("Juego creado con éxito! ID del juego: ", gameId);
       
                 // Enviar el mensaje de creación del juego a través del WebSocket

@@ -395,7 +395,7 @@ async logout(username) {
         if (!token) {
           throw new Error("Token no encontrado");
         }
-  
+    
         const response = await fetch(`${API_URL}/game-multi/v1/create/`, {
           method: "POST",
           headers: {
@@ -413,18 +413,18 @@ async logout(username) {
             }
           }),
         });
-  
-        if (!response.ok) {
-          throw new Error("Error al crear el juego");
-        }
-  
-        const data = await response.json();
+    
+        // Imprimir el cuerpo de la respuesta para inspección
+        const data = await response.text(); // Obtener la respuesta como texto
+   
         return data; // Devolvemos el ID del juego creado (gameid)
+    
       } catch (error) {
         console.error("Error al crear el juego:", error.message);
         throw new Error(error.message);
       }
     }
+    
   
     
   }
