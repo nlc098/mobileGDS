@@ -121,13 +121,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: 'rgba(249, 253, 220, 0.8)',
-    paddingTop: 100, 
     padding: 16,
   },
   title: {
     fontSize: 50,
     fontWeight: 'bold',
     marginBottom: 20,
+    marginTop: 50,
     color: "#653532"
   },
   card: {

@@ -449,6 +449,78 @@ async logout(username) {
       throw new Error(error.message);
     }
   }
+
+  async rankingPartidasWin() {
+    try {
+      const token = await this.getToken();
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+  
+      const response = await fetch(`${API_URL}/users/v1/rankingPartidasWin`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      const data = await response.json();
+      return data; 
+  
+    } catch (error) {
+      console.error("Error al crear el juego:", error.message);
+      throw new Error(error.message);
+    }
+  }
+
+  async rankingPuntaje() {
+    try {
+      const token = await this.getToken();
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+  
+      const response = await fetch(`${API_URL}/users/v1/rankingPuntaje`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      const data = await response.json(); 
+      return data; 
+  
+    } catch (error) {
+      console.error("Error al crear el juego:", error.message);
+      throw new Error(error.message);
+    }
+  }
+
+  async rankingTiempo() {
+    try {
+      const token = await this.getToken();
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+  
+      const response = await fetch(`${API_URL}/users/v1/rankingTiempo`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      const data = await response.json(); 
+      return data;
+  
+    } catch (error) {
+      console.error("Error al crear el juego:", error.message);
+      throw new Error(error.message);
+    }
+  }
 }
 
 
@@ -628,6 +700,36 @@ export const createGame = async (userHost, userGuest) => {
 export const listGames = async (idUser) => {
   try {
     const data = await apiService.listGames(idUser);
+    return data; 
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+}
+
+export const rankingPartidasWin = async () => {
+  try {
+    const data = await apiService.rankingPartidasWin();
+    return data; 
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+}
+
+export const rankingPuntaje = async () => {
+  try {
+    const data = await apiService.rankingPuntaje();
+    return data; 
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+}
+
+export const rankingTiempo = async () => {
+  try {
+    const data = await apiService.rankingTiempo();
     return data; 
   } catch (error) {
     Alert.alert("Error", error.message);

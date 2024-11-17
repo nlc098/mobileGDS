@@ -238,7 +238,6 @@ const renderPlayer = ({ item }) => {
 };
 
     return (
-        
         <View style={styles.container}>
             <HeaderMain />
             <Text style={styles.title}>Game Lobby</Text>
@@ -267,9 +266,10 @@ const renderPlayer = ({ item }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        alignItems:'center',
         backgroundColor: '#f6f3d4',
         paddingHorizontal: 16,
-        paddingVertical: 20,
+        marginTop: 15,
     },
     title: {
         fontSize: 24,

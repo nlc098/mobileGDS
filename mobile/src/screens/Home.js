@@ -8,7 +8,6 @@ const Home = () => {
   const navigation = useNavigation();
 
   const handleNavigation = (gameMode) => {
-    // Navegar a la pantalla 'GameSet' y pasar el parámetro 'gameMode'
     navigation.navigate('GameSet', { gameMode });
   };
 
@@ -39,7 +38,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    marginTop:150,
+    marginTop:120,
   },
   logo: {
     marginTop: 80,

@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', // Alinea los elementos horizontalmente
     paddingHorizontal: 10, // Añade un poco de espacio a los lados
     width: '109%', // Asegura que el header ocupe todo el ancho
-    position: 'absolute', // Posición absoluta para fijar el header
+    position: 'relative', // Posición absoluta para fijar el header
     top: 0, // Coloca el header en la parte superior
     left: 0, // Asegura que esté alineado a la izquierda
   },

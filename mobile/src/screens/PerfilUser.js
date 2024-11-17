@@ -173,7 +173,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: 'rgba(249, 253, 220, 0.8)', // Fondo semi-transparente
-    paddingTop: 100, // Espacio para el encabezado
     padding: 16,
   },
   card: {

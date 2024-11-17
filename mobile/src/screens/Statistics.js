@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import MainMenu from '../components/MainMenu';
 import Dropdown from '../components/Dropdown';
-import { listGames } from '../CallsAPI';
+import { listGames, rankingPartidasWin, rankingPuntaje, rankingTiempo } from '../CallsAPI';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
@@ -10,16 +10,18 @@ const screenWidth = Dimensions.get('window').width;
 const Statistics = () => {
 
   const [playerData, setplayerData] = useState(null);
+  const [rankingWins, setRankingWins] = useState(null);
+  const [rankingPoints, setRankingPoints] = useState(null);
+  const [rankingTimes, setRankingTimes] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPlayerData = async () => {
       try {
         const userId = await AsyncStorage.getItem("userId");
         const statsData = await listGames(userId);
-        console.log(statsData.partidas);
         if (statsData) {
           setplayerData(statsData.partidas);
-          console.log(playerData);
+          //console.log(playerData);
         } else {
           throw new Error("No se recibieron datos de la API.");
         }
@@ -28,11 +30,43 @@ const Statistics = () => {
       }
     };
 
-    fetchData();
+    const fetchRankingWins = async () => {
+      try {
+        const statsData = await rankingPartidasWin();    
+          console.log(statsData);
+          setRankingWins(statsData);
+      } catch (error) {
+        console.log("Error", error.message);
+      }
+    };
+
+    const fetchRankingPoints = async () => {
+      try {
+        const statsData = await rankingPuntaje();
+        console.log(statsData);
+        setRankingPoints(statsData);
+      } catch (error) {
+        console.log("Error", error.message);
+      }
+    };
+
+    const fetchRankingTimes = async () => {
+      try {
+        const statsData = await rankingTiempo();
+        console.log(statsData);
+        setRankingTimes(statsData);
+      } catch (error) {
+        console.log("Error", error.message);
+      }
+    };
+    fetchPlayerData();
+    fetchRankingWins();
+    fetchRankingPoints();
+    fetchRankingTimes();
   }, []);
 
  
-  const [rankingOption, setrankingOption] = useState("Max. ganadas");
+  const [rankingOption, setrankingOption] = useState("Partidas ganadas");
   const [listOption, setListOption] = useState("Partida individual");
 
   const gameMapping = {
@@ -50,7 +84,7 @@ const Statistics = () => {
       points: game.points,
       time: game.time_playing,
     })),
-    "Partida multijugador": playerData?.MULTIPLAYER?.map((game, index) => ({
+    "Partida multijugador": playerData?.MULTIPLAYER?.map((game) => ({
       game1: gameMapping[game.game1] || game.game1,
       game2: gameMapping[game.game2] || game.game2,
       game3: gameMapping[game.game3] || game.game3,
@@ -62,19 +96,25 @@ const Statistics = () => {
   };
 
   const rankingsData = {
-    "Max. ganadas": Array.from({ length: 10 }, (_, index) => ({
-      user: `User${index + 1}`,
-      partidasGanadas: Math.floor(Math.random() * 10) + 1,
+    "Partidas ganadas": rankingWins?.map((data) => ({
+      user: data.username,
+      wins: data.criterio,
     })),
-    "Max. aciertos": Array.from({ length: 10 }, (_, index) => ({
-      user: `User${index + 1}`,
-      aciertosTotales: Math.floor(Math.random() * 30) + 10,
+    "Puntos totales (individual)": rankingPoints?.INDIVIDUAL?.map((data) => ({
+      user: data.username,
+      points: data.criterio,
     })),
-    "Mín. tiempos": Array.from({ length: 10 }, (_, index) => ({
-      user: `User${index + 1}`,
-      fase: ["MC", "GP", "OW"][Math.floor(Math.random() * 3)],
-      categoria: ["Cine", "Historia", "Deportes", "Ciencia", "Música"][Math.floor(Math.random() * 5)],
-      tiempo: Math.floor(Math.random() * 27) + 3,
+    "Puntos totales (multijugador)": rankingPoints?.MULTIPLAYER?.map((data) => ({
+      user: data.username,
+      points: data.criterio,
+    })),
+    "Tiempos de acierto (individual)": rankingTimes?.INDIVIDUAL?.map((data) => ({
+      user: data.username,
+      time: data.criterio,
+    })),
+    "Tiempos de acierto (multijugador)": rankingTimes?.MULTIPLAYER?.map((data) => ({
+      user: data.username,
+      time: data.criterio,
     })),
   };
 
@@ -138,44 +178,59 @@ const Statistics = () => {
           <View style={styles.tableContainer}>
             <Text style={styles.title}>Rankings</Text>
             <Dropdown
-              options={["Max. ganadas", "Max. aciertos", "Mín. tiempos"]}
+              options={["Partidas ganadas", "Puntos totales (individual)", "Puntos totales (multijugador)", "Tiempos de acierto (individual)", "Tiempos de acierto (multijugador)"]}
               selectedValue={rankingOption}
               onValueChange={setrankingOption}
             />
             <View style={styles.tableHeader}>
-              {rankingOption === "Mín. tiempos" ? (
+              {rankingOption === "Partidas ganadas" ? (
                 <>
-                  <Text style={styles.headerCell}>User</Text>
-                  <Text style={styles.headerCell}>Fase</Text>
-                  <Text style={styles.headerCell}>Categoría</Text>
+                  <Text style={styles.headerCell}>Usuario</Text>
+                  <Text style={styles.headerCell}>Ganadas</Text>
+                </>
+              ) : rankingOption === "Tiempos de acierto (individual)" || "Tiempos de acierto (multijugador)" ? (
+                <>
+                  <Text style={styles.headerCell}>Usuario</Text>
                   <Text style={styles.headerCell}>Tiempo</Text>
                 </>
-              ) : (
+              ) : rankingOption === "Puntos totales (individual)" || rankingOption === "Puntos totales (multijugador)" ? (
                 <>
-                  <Text style={styles.headerCell}>User</Text>
-                  <Text style={styles.headerCell}>
-                    {rankingOption === "Max. ganadas" ? "Partidas ganadas" : "Aciertos totales"}
-                  </Text>
+                  <Text style={styles.headerCell}>Usuario</Text>
+                  <Text style={styles.headerCell}>Puntos</Text>
                 </>
-              )}
+              ) : null}
             </View>
             <ScrollView style={styles.tableBody} nestedScrollEnabled>
-              {rankingsData[rankingOption].map((item, index) => (
-                <View key={index} style={styles.row}>
-                  <Text style={styles.cell}>{item.user}</Text>
-                  {rankingOption === "Mín. tiempos" ? (
-                    <>
-                      <Text style={styles.cell}>{item.fase}</Text>
-                      <Text style={styles.cell}>{item.categoria}</Text>
-                      <Text style={styles.cell}>{item.tiempo}</Text>
-                    </>
-                  ) : (
-                    <Text style={styles.cell}>
-                      {rankingOption === "Max. ganadas" ? item.partidasGanadas : item.aciertosTotales}
-                    </Text>
-                  )}
-                </View>
-              ))}
+            {rankingsData[rankingOption]?.map((item, index) => (
+              <View key={index} style={styles.row}>
+                {rankingOption === "Partidas ganadas" ? (
+                  <>
+                    <Text style={styles.cell}>{item.user}</Text>
+                    <Text style={styles.cell}>{item.wins}</Text>
+                  </>
+                ) : rankingOption === "Puntos totales (individual)" ? (
+                  <>
+                    <Text style={styles.cell}>{item.user}</Text>
+                    <Text style={styles.cell}>{item.points}</Text>
+                  </>
+                ) : rankingOption === "Puntos totales (multijugador)" ? (
+                  <>
+                    <Text style={styles.cell}>{item.user}</Text>
+                    <Text style={styles.cell}>{item.points}</Text>
+                  </>
+                ) : rankingOption === "Tiempos de acierto (individual)" ? (
+                  <>
+                    <Text style={styles.cell}>{item.user}</Text>
+                    <Text style={styles.cell}>{item.time}</Text>
+                  </>
+                ) : rankingOption === "Tiempos de acierto (multijugador)" ? (
+                  <>
+                    <Text style={styles.cell}>{item.user}</Text>
+                    <Text style={styles.cell}>{item.time}</Text>
+                  </>
+                ) : null}
+              </View>
+            ))}
             </ScrollView>
           </View>
         </View>
@@ -191,7 +246,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    marginTop: 100,
+    marginTop: 50,
     marginBottom: 100,
   },
   tableContainer: {
