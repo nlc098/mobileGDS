@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Modal, Pressable, StyleSheet } from 'react-native';
 
 const Dropdown = ({ options, selectedValue, onValueChange }) => {
   const [modalVisible, setModalVisible] = useState(false);

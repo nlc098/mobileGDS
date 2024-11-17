@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.0.103:8080/api";
+const API_URL = "http://192.168.1.6:8080/api";
 
 // Función para decodificar el JWT, retorna el userId
 const decodeJWT = (token) => {
@@ -389,45 +389,67 @@ async logout(username) {
     }
   }
     // Método para crear un juego multijugador
-    async createGame(userHost, userGuest) {
-      try {
-        const token = await this.getToken(); // Obtener el token del usuario
-        if (!token) {
-          throw new Error("Token no encontrado");
-        }
-    
-        const response = await fetch(`${API_URL}/game-multi/v1/create/`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userHost: {
-              username: userHost.username,
-              userId: userHost.userId
-            },
-            userGuest: {
-              username: userGuest.username,
-              userId: userGuest.userId
-            }
-          }),
-        });
-    
-        // Imprimir el cuerpo de la respuesta para inspección
-        const data = await response.text(); // Obtener la respuesta como texto
-   
-        return data; // Devolvemos el ID del juego creado (gameid)
-    
-      } catch (error) {
-        console.error("Error al crear el juego:", error.message);
-        throw new Error(error.message);
+  async createGame(userHost, userGuest) {
+    try {
+      const token = await this.getToken(); // Obtener el token del usuario
+      if (!token) {
+        throw new Error("Token no encontrado");
       }
-    }
-    
   
-    
+      const response = await fetch(`${API_URL}/game-multi/v1/create/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userHost: {
+            username: userHost.username,
+            userId: userHost.userId
+          },
+          userGuest: {
+            username: userGuest.username,
+            userId: userGuest.userId
+          }
+        }),
+      });
+  
+      // Imprimir el cuerpo de la respuesta para inspección
+      const data = await response.text(); // Obtener la respuesta como texto
+  
+      return data; // Devolvemos el ID del juego creado (gameid)
+  
+    } catch (error) {
+      console.error("Error al crear el juego:", error.message);
+      throw new Error(error.message);
+    }
   }
+    
+  async listGames(idUser) {
+    try {
+      const token = await this.getToken();
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+  
+      const response = await fetch(`${API_URL}/users/v1/gamesOfPlayer/${idUser}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      // Imprimir el cuerpo de la respuesta para inspección
+      const data = await response.json(); // Obtener la respuesta como texto
+      return data; // Devolvemos el ID del juego creado (gameid)
+  
+    } catch (error) {
+      console.error("Error al crear el juego:", error.message);
+      throw new Error(error.message);
+    }
+  }
+}
 
 
 
@@ -602,3 +624,13 @@ export const createGame = async (userHost, userGuest) => {
     return null;
   }
 };
+
+export const listGames = async (idUser) => {
+  try {
+    const data = await apiService.listGames(idUser);
+    return data; 
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+}

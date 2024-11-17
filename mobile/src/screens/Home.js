@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Logo from '../components/Logo';
 import { buttonStyles } from '../styles/buttons';
@@ -14,7 +14,8 @@ const Home = () => {
 
   return (
     <MainMenu>
-        <Logo />
+      <View style={styles.container}>
+      <Logo/>
         <TouchableOpacity 
           style={buttonStyles.buttonfullwidth}
           onPress={() => handleNavigation('individual')}>
@@ -25,6 +26,7 @@ const Home = () => {
           onPress={() => handleNavigation('multiplayer')}>
           <Text style={buttonStyles.buttonText}>Partida Multijugador</Text>
         </TouchableOpacity>
+      </View>
     </MainMenu>
   );
 };
@@ -36,31 +38,12 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(249, 253, 220, 0.4)',
-    padding: 16,
+    marginTop:150,
   },
-  button: {
-    backgroundColor: '#B36F6F',
-    padding: 15,
-    borderRadius: 10,
-    width: '80%',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  username: {
-    fontSize: 20,
-    color: "black", // Cambiado a negro
-    marginBottom: 20,
-    fontWeight: "bold",
-  },
+  logo: {
+    marginTop: 80,
+  }
 });
 
 export default Home;

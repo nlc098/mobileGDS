@@ -20,6 +20,7 @@ const LoadingGame = () => {
       try {
         const responseData = await initGame(userId, parCatMod.map(item => item.cat), parCatMod.map(item => item.mod));
         if (responseData) {
+          console.log(responseData);
           setResponseData(responseData); 
           const idGameSingle = await initPlayGame(responseData.idGameSingle);
           if (idGameSingle == null) {

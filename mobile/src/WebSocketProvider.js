@@ -28,7 +28,7 @@ export const SocketProvider = ({ children }) => {
 
     // Conexión al servidor WebSocket
     const connect = (dtoUserOnline) => {
-        client.current = Stomp.over(() => new SockJS('http://192.168.1.11:8080/ws'));
+        client.current = Stomp.over(() => new SockJS('http://192.168.1.6:8080/ws'));
 
         if (dtoUserOnline === null) {
             console.error("DtoUserOnline NULL");

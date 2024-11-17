@@ -8,8 +8,7 @@ const MainMenu = ({ children }) => {
     <ImageBackground 
       source={require('../../assets/fondo_mobile.jpeg')} 
       style={styles.background} 
-      resizeMode="cover" 
-    >
+      resizeMode="cover">
       <View style={styles.container}>
         <HeaderMain />
 
@@ -31,7 +30,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: 'rgba(249, 253, 220, 0.8)',
-    paddingTop: 180,
     padding: 16,
   },
 });
