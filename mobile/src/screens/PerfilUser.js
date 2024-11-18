@@ -4,7 +4,9 @@ import HeaderMain from '../components/HeaderMain';
 import FooterButtons from '../components/FooterButtons';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { buttonStyles } from '../styles/buttons';
-import { getUserByUsername, editUser } from '../CallsAPI'; // Importa la función de edición
+import { getUserByUsername, editUser, getImageProfile } from '../CallsAPI';
+import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const User = () => {
   const [user, setUser] = useState({
@@ -18,6 +20,7 @@ const User = () => {
   const [isEditing, setIsEditing] = useState(false); // Estado para el modo de edición
   const [newUrlPerfil, setNewUrlPerfil] = useState(''); // Estado para nueva URL de imagen
   const [newPassword, setNewPassword] = useState(''); // Estado para nueva contraseña
+  const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -41,37 +44,92 @@ const User = () => {
       }
     };
 
+    const fetchProfileImage = async () => {
+      try {
+        const username = await AsyncStorage.getItem("username"); // Obtén el nombre de usuario
+        if (username) {
+          const imageUrl = await getImageProfile(username); // Llama al endpoint
+          if (imageUrl) { 
+            setProfileImage(imageUrl); // Asigna la URL a la variable de estado
+          }
+        }
+      } catch (error) {
+        Alert.alert("Error", error.message); // Muestra un mensaje al usuario
+      }
+    };
+
     fetchUser();
+    fetchProfileImage();
   }, []);
 
-  const handleSaveChanges = async () => {
-    try {
-      const defaultImage = '../../assets/GDSFavicon.png'; // Ruta de la imagen por defecto
-      const imageToUse = newUrlPerfil ? newUrlPerfil : Image.resolveAssetSource(require(defaultImage)).uri;
+  // const handleSaveChanges = async () => {
+  //   try {
+  //     const defaultImage = '../../assets/GDSFavicon.png'; // Ruta de la imagen por defecto
+  //     const imageToUse = newUrlPerfil ? newUrlPerfil : Image.resolveAssetSource(require(defaultImage)).uri;
 
-      // Verifica que la nueva contraseña no esté vacía
-      if (newPassword.trim() === '') {
-        Alert.alert('Error', 'La contraseña es obligatoria');
-        return;
-      }
+  //     // Verifica que la nueva contraseña no esté vacía
+  //     if (newPassword.trim() === '') {
+  //       Alert.alert('Error', 'La contraseña es obligatoria');
+  //       return;
+  //     }
 
-      // Usamos la nueva contraseña
-      const passwordToUse = newPassword.trim();
+  //     // Usamos la nueva contraseña
+  //     const passwordToUse = newPassword.trim();
 
-      if (imageToUse || passwordToUse) {  // Si hay algún cambio en la imagen o la contraseña
-        await editUser(user.username, passwordToUse, imageToUse); // Llama a la API con la nueva contraseña
-        setUser((prevUser) => ({
-          ...prevUser,
-          urlPerfil: imageToUse ? imageToUse : prevUser.urlPerfil,
-        }));
-        Alert.alert('Éxito', 'Los cambios se han guardado correctamente.');
-        setIsEditing(false); // Resetea el modo de edición
+  //     if (imageToUse || passwordToUse) {  // Si hay algún cambio en la imagen o la contraseña
+  //       await editUser(user.username, passwordToUse, imageToUse); // Llama a la API con la nueva contraseña
+  //       setUser((prevUser) => ({
+  //         ...prevUser,
+  //         urlPerfil: imageToUse ? imageToUse : prevUser.urlPerfil,
+  //       }));
+  //       Alert.alert('Éxito', 'Los cambios se han guardado correctamente.');
+  //       setIsEditing(false); // Resetea el modo de edición
+  //     } else {
+  //       Alert.alert('Error', 'No se han realizado cambios.');
+  //     }
+  //   } catch (error) {
+  //     Alert.alert('Error', 'Hubo un problema al guardar los cambios.');
+  //     console.error("Error al actualizar el usuario:", error);
+  //   }
+  // };
+
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permiso denegado",
+        "Se necesita permiso para acceder a las imágenes."
+      );
+      return;
+    }
+  
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaType,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+  
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      setProfileImage(imageUri);
+      setUser((prevUser) => ({
+        ...prevUser,
+        urlPerfil: imageUri,
+      }));
+      console.log("Imagen seleccionada:", imageUri);
+  
+      const username = await AsyncStorage.getItem("username");
+      if (username) {
+        try {
+          const response = await editUser(username, null, imageUri);
+          console.log("Usuario actualizado:", response);
+        } catch (error) {
+          console.error("Error al actualizar el usuario:", error.message);
+        }
       } else {
-        Alert.alert('Error', 'No se han realizado cambios.');
+        console.error("No se encontró el username en AsyncStorage");
       }
-    } catch (error) {
-      Alert.alert('Error', 'Hubo un problema al guardar los cambios.');
-      console.error("Error al actualizar el usuario:", error);
     }
   };
 
@@ -84,17 +142,18 @@ const User = () => {
       <View style={styles.container}>
         <HeaderMain />
 
-        <Pressable>
-          {user.urlPerfil ? (
+        <Pressable onPress={handlePickImage}>
+          {profileImage ? ( // Verifica si profileImage tiene un valor
             <Image 
-              source={{ uri: user.urlPerfil }} 
+              source={{ uri: profileImage }} // Usa profileImage como fuente
               style={styles.profileImage}
               resizeMode="cover"
             />
           ) : (
-            <Icon name="person-circle-outline" size={130}/>
+            <Icon name="person-circle-outline" size={120} />
           )}
         </Pressable>
+
 
         <View style={styles.card}>
           {!isEditing ? (
@@ -116,9 +175,9 @@ const User = () => {
                 <Text style={styles.value}>{user.birthday}</Text>
               </View>
 
-              <TouchableOpacity style={[buttonStyles.buttonfullwidth, { alignSelf: 'center' }]}>
+              {/* <TouchableOpacity style={[buttonStyles.buttonfullwidth, { alignSelf: 'center' }]}>
                 <Text style={buttonStyles.buttonText} onPress={() => setIsEditing(true)}>Editar perfil</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             
             </>
           ) : (

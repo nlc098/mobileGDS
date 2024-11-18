@@ -15,6 +15,7 @@
     "@react-navigation/native-stack": "^6.11.0",
     "@stomp/stompjs": "^7.0.0",
     "expo": "^51.0.38",
+    "expo-image-picker": "^16.0.2",
     "expo-status-bar": "~1.12.1",
     "mobile": "file:",
     "react": "18.2.0",

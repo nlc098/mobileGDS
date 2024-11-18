@@ -170,23 +170,36 @@ async logout(username) {
     }
   }
   // Método para editar datos del usuario
-  async editUser(username, newPassword, newUrlPerfil) {
+  async editUser(username, newPassword, imageUri) {
     try {
       const token = await this.getToken(); // Obtener el token del usuario
       if (!token) {
         throw new Error("Token no encontrado");
       }
   
+      // Crear el FormData
+      const formData = new FormData();
+  
+      if (newPassword) {
+        formData.append("password", newPassword); // Campo del DTO
+      }
+  
+      if (imageUri) {
+        formData.append("file", {
+          uri: imageUri,
+          type: "image/jpeg", // Cambiar según el tipo de archivo seleccionado
+          name: "profile_image.jpg",
+        });
+      }
+  
+      // Realizar la solicitud
       const response = await fetch(`${API_URL}/users/v1/edit/${username}`, {
         method: "PUT",
         headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Autorización con el token
+          "Content-Type": "multipart/form-data", // Tipo de contenido
         },
-        body: JSON.stringify({
-          password: newPassword,
-          urlPerfil: newUrlPerfil
-        }),
+        body: formData, // Enviar el formulario
       });
   
       if (!response.ok) {
@@ -195,12 +208,13 @@ async logout(username) {
       }
   
       const data = await response.json();
-      return data; 
+      return data;
     } catch (error) {
       console.error("Error al editar el usuario:", error.message);
       throw new Error(error.message);
     }
   }
+  
    // Método para obtener todas las categorias
    async getCategories() {
     try {
@@ -521,9 +535,37 @@ async logout(username) {
       throw new Error(error.message);
     }
   }
+
+  async getImageProfile(username) {
+    try {
+      const token = await this.getToken(); // Obtener el token del usuario
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+  
+      const response = await fetch(`${API_URL}/users/v1/getImageProfile/${username}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al obtener la imagen");
+      }
+  
+      const data = await response.text(); // Parsear el JSON de la respuesta
+      return data; // Supongamos que este contiene la URL de la imagen
+  
+    } catch (error) {
+      console.error("Error4:", error.message);
+      throw new Error(error.message);
+    }
+  }
+  
 }
-
-
 
 const apiService = new ApiService();
 
@@ -731,6 +773,16 @@ export const rankingTiempo = async () => {
   try {
     const data = await apiService.rankingTiempo();
     return data; 
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+}
+
+export const getImageProfile = async (username) => {
+  try {
+    const data = await apiService.getImageProfile(username);
+    return data;
   } catch (error) {
     Alert.alert("Error", error.message);
     return null;
