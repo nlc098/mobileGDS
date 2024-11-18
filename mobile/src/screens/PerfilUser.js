@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
 import { View, Text, StyleSheet, ImageBackground, Pressable, Image, TextInput, TouchableOpacity, Alert } from 'react-native';
 import HeaderMain from '../components/HeaderMain';
 import FooterButtons from '../components/FooterButtons';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { buttonStyles } from '../styles/buttons';
-import { getUserByUsername, editUser } from '../CallsAPI'; // Importa la función de edición
+import { getUserByUsername, editUser, getImageProfile } from '../CallsAPI'; // Importa la función de edición
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 const User = () => {
   const [user, setUser] = useState({
@@ -15,14 +18,45 @@ const User = () => {
     urlPerfil: '',
   });
 
+  const [profileImage, setProfileImage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null); // Estado para errores
+
+  
+
+  /* const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permiso denegado",
+        "Se necesita permiso para acceder a las imágenes.",
+      );
+      return;
+    }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 1,
+  });
+
+  if (!result.canceled) {
+    setProfileImage(result.assets[0].uri);
+  }
+};
+*/
   const [isEditing, setIsEditing] = useState(false); // Estado para el modo de edición
   const [newUrlPerfil, setNewUrlPerfil] = useState(''); // Estado para nueva URL de imagen
   const [newPassword, setNewPassword] = useState(''); // Estado para nueva contraseña
 
   useEffect(() => {
+
     const fetchUser = async () => {
       try {
-        const userData = await getUserByUsername();
+        const storedUsername = await AsyncStorage.getItem("username"); // Obtén el username de AsyncStorage
+      if (storedUsername) {
+        const userData = await getUserByUsername(storedUsername);
+        //const userData = await getUserByUsername();
         if (userData && userData.username) {
           const userObject = {
             username: userData.username,
@@ -36,27 +70,98 @@ const User = () => {
         } else {
           console.error("No se encontró el usuario");
         }
+
+        } else {
+          console.error("No se encontró el username en AsyncStorage");
+        }
+
       } catch (error) {
         console.error("Error al obtener el usuario:", error);
       }
     };
 
+    const fetchProfileImage = async () => {
+      try {
+        const storedUsername = await AsyncStorage.getItem("username");
+        //const imageData = await getImageProfile(username); // Llama al método de API
+        if (storedUsername) {
+        const imageData = await getImageProfile(storedUsername); // Llama al método de API
+        if (imageData) { 
+          const imageUrl = URL.createObjectURL(imageData);
+          setProfileImage(imageUrl);
+        }
+       }
+      } catch (error) {
+        setErrorMessage(error.message); // Maneja errores
+        Alert.alert("Error", error.message); // Muestra un mensaje al usuario
+      }
+    };
+
     fetchUser();
+    fetchProfileImage();
   }, []);
+
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permiso denegado",
+        "Se necesita permiso para acceder a las imágenes."
+      );
+      return;
+    }
+  
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+  
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+      setUser((prevUser) => ({
+        ...prevUser,
+        urlPerfil: result.assets[0].uri,
+      }));
+    }
+  };
+
+
+
 
   const handleSaveChanges = async () => {
     try {
+      const response = await editUser(user.username, passwordToUse, imageToUse);
       const defaultImage = '../../assets/GDSFavicon.png'; // Ruta de la imagen por defecto
       const imageToUse = newUrlPerfil ? newUrlPerfil : Image.resolveAssetSource(require(defaultImage)).uri;
+
+      // Verifica si la respuesta es JSON antes de parsearla
+      const data = await response.json().catch((e) => {
+      console.error('Error al parsear JSON', e);
+      throw new Error('Respuesta no válida');
+      });
+
 
       // Verifica que la nueva contraseña no esté vacía
       if (newPassword.trim() === '') {
         Alert.alert('Error', 'La contraseña es obligatoria');
         return;
       }
+      // Verifica que la url de imagen de perfil sea valida
+      if (newUrlPerfil && !isValidUrl(newUrlPerfil)) {
+        Alert.alert('Error', 'Por favor ingresa una URL válida para la imagen.');
+        return;
+      }  
 
       // Usamos la nueva contraseña
       const passwordToUse = newPassword.trim();
+
+      // Continúa con el flujo de la aplicación si la respuesta es válida
+      setUser((prevUser) => ({
+        ...prevUser,
+        urlPerfil: imageToUse ? imageToUse : prevUser.urlPerfil,
+      }));
 
       if (imageToUse || passwordToUse) {  // Si hay algún cambio en la imagen o la contraseña
         await editUser(user.username, passwordToUse, imageToUse); // Llama a la API con la nueva contraseña
@@ -83,19 +188,19 @@ const User = () => {
     >
       <View style={styles.container}>
         <HeaderMain />
-
-        <Pressable>
-          {user.urlPerfil ? (
-            <Image 
-              source={{ uri: user.urlPerfil }} 
-              style={styles.profileImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <Icon name="person-circle-outline" size={130}/>
-          )}
+        
+        <Pressable onPress={handlePickImage} style={styles.profileImageContainer}>
+        {user.urlPerfil ? (
+        <Image 
+          source={{ uri: user.urlPerfil }} 
+          style={styles.profileImage} 
+        />
+      ) : (
+        <Icon name="person-circle-outline" size={130} color="#ccc" />
+        )}
         </Pressable>
-
+        <Text style={styles.profileImageText}>Seleccionar imagen de perfil</Text>
+        {errorMessage && <Text style={{ color: "red", textAlign: "center", marginTop: 10 }}>{errorMessage}</Text>}
         <View style={styles.card}>
           {!isEditing ? (
             <>
@@ -215,12 +320,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 5,
   },
-  buttonText: {
-    color: '#007BFF',
-    fontSize: 18,
-    textAlign: 'center',
-    marginTop: 15,
-  },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -229,14 +328,41 @@ const styles = StyleSheet.create({
   buttonHalfWidth: {
     width: '48%',
   },
+  buttonText: {
+    color: "white",
+    fontSize: 16,
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  profileImageContainer: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    borderWidth: 2,
+    borderColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden', // Para que la imagen no exceda el borde del contenedor
+    marginBottom: 20,
+  },
   profileImage: {
-    width: 130,          
-    height: 130,         
-    borderRadius: 65,    
-    marginBottom: 20,    
-    borderWidth: 2,      
-    borderColor: '#000', 
-  }
+    width: '100%',
+    height: '100%',
+  },
+  profileImageText: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginTop: 8, // Espaciado entre el icono y el texto
+    fontStyle: 'italic', // Opcional, para darle un toque decorativo
+  },
 });
 
 export default User;

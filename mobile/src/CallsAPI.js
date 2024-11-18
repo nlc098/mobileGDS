@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.1.6:8080/api";
+const API_URL = "http://192.168.56.1:8080/api";
 
 // Función para decodificar el JWT, retorna el userId
 const decodeJWT = (token) => {
@@ -449,6 +449,35 @@ async logout(username) {
       throw new Error(error.message);
     }
   }
+
+  async getImageProfile(username) {
+    try {
+      const token = await this.getToken(); // Obtener el token del usuario
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+  
+      const response = await fetch(`${API_URL}/users/v1/getImageProfile/${username}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al editar el usuario");
+      }
+  
+      const data = await response.json();
+      return data; 
+    } catch (error) {
+      console.error("Error al editar el usuario:", error.message);
+      throw new Error(error.message);
+    }
+  }
+
 }
 
 
@@ -629,6 +658,16 @@ export const listGames = async (idUser) => {
   try {
     const data = await apiService.listGames(idUser);
     return data; 
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+};
+
+export const getImageProfile = async (username) => {
+  try {
+    const data = await apiService.getImageProfile(username);
+    return data;
   } catch (error) {
     Alert.alert("Error", error.message);
     return null;
