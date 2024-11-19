@@ -332,6 +332,82 @@ async logout(username) {
     }
   }
 
+  async initgameMulti(idPartida, dtoinitGameMultiRequest) {
+    try {
+      // Obtener el token del usuario
+      const token = await this.getToken();
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+  
+      let { parCatMod } = dtoinitGameMultiRequest;
+  
+      // Asegurarse de que parCatMod sea un arreglo, incluso si se pasa como objeto
+      if (typeof parCatMod === "object" && !Array.isArray(parCatMod)) {
+        parCatMod = [parCatMod];  // Convertimos el objeto en un arreglo
+      }
+  
+      // Hacer la solicitud a la API
+      const response = await fetch(`${API_URL}/game-multi/v1/start/${idPartida}/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idPartida: idPartida,
+          parCatMod: parCatMod, // Ahora parCatMod debería ser siempre un arreglo
+        }),
+      });
+  
+      // Verificar que la respuesta fue exitosa
+      if (!response.ok) {
+        throw new Error("Error al cargar el juego");
+      }
+  
+      // Parsear la respuesta JSON
+      const data = await response.json();
+      return data; // Retornar los datos obtenidos del servidor
+    } catch (error) {
+      // Manejo de errores
+      console.error("Error en la solicitud:", error.message);
+      throw new Error(`Error al cargar el juego: ${error.message}`);
+    }
+  }
+
+  async fetchMultiplayerGame(idGameMulti, dtoinitGameMultiRequest) {
+    try {
+      const { parCatMod } = dtoinitGameMultiRequest;
+      const response = await fetch(`${API_URL}/game-multi/game/${idGameMulti}/start/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idPartida: idGameMulti,
+          parCatMod: parCatMod.map((category) => ({
+            cat: category.cat,
+            mod: category.mod,
+          })),
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error en la API: ${response.status}`);
+      }
+  
+      // Si no esperas contenido en la respuesta, solo verifica el estado
+      if (response.status === 200) {
+        return { message: "Partida iniciada exitosamente" };  // O lo que necesites hacer
+      }
+  
+      // Si esperas respuesta, pero el cuerpo está vacío
+      const data = await response.json();  // Solo lo haces si el servidor está enviando datos
+      return data;
+    } catch (error) {
+      throw new Error(`Error al obtener datos del juego: ${error.message}`);
+    }
+  }
+
     // Setea horario de inicio de partida
     async finishPlayGame(idGameSingle) {
       try {
@@ -388,6 +464,35 @@ async logout(username) {
       console.error(error.message);
     }
   }
+
+  async sendAnswerMulti (idSocket, dtoSendAnswer) {
+    try {
+      const response = await fetch(`${API_URL}/game-multi/game/${idSocket}/play/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json', // Asegúrate de enviar datos en formato JSON
+        },
+  
+        body: JSON.stringify(idSocket, dtoSendAnswer), // Convierte el objeto dtoSendAnswer a JSON
+      });
+  
+      // Verificar si la respuesta es exitosa
+      if (!response.ok) {
+        throw new Error('Error en la solicitud');
+      }
+  
+      // Obtener la respuesta en formato JSON
+      const data = await response.json();
+  
+      // Si la respuesta es exitosa, puedes manejar el mensaje
+      console.log('Respuesta del backend:', data);
+      
+  
+    } catch (error) {
+      // Manejo de errores
+      console.log('Error al enviar respuesta:', error);
+    }
+  };
 
   async restorePassword(email) {
     try {
@@ -461,6 +566,36 @@ async logout(username) {
     } catch (error) {
       console.error("Error al crear el juego:", error.message);
       throw new Error(error.message);
+    }
+  }
+
+  async loadGameMulti(loadGameData, idSocket) {
+    try {
+        const token = await this.getToken(); // Obtener el token del usuario
+        if (!token) {
+            throw new Error("Token no encontrado");
+        }
+
+        const response = await fetch(`${API_URL}/game-multi/game/${idSocket}/load-game/`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(loadGameData),
+        });
+
+        // Verificar si la respuesta es exitosa
+        if (!response.ok) {
+            const errorText = await response.text(); // Leer error detallado del servidor
+            throw new Error(`Error del servidor: ${errorText || response.status}`);
+        }
+
+        console.log("Respuesta del servidor exitosa pero vacía");
+        return; // No intentamos analizar el cuerpo
+    } catch (error) {
+        console.error(error.message);
+        throw new Error(error.message);
     }
   }
 
@@ -650,6 +785,16 @@ export const loadGame = async (categories, modeGame) => {
   }
 };
 
+export const fetchMultiplayerGame = async (idGameMulti,dtoinitGameMultiRequest) => {
+  try {
+    const data = await apiService.fetchMultiplayerGame(idGameMulti,dtoinitGameMultiRequest);
+    return data;
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+};
+
 export const initGame = async (userId, categories, modeGames) => {
   try {
     const data = await apiService.initgame(userId, categories, modeGames);
@@ -683,6 +828,16 @@ export const finishPlayGame = async (idGameSingle) => {
 export const sendAnswer = async (idGameSingle, userId, answer, gameId, time) => {
   try {
     const data = await apiService.sendAnswer(idGameSingle, userId, answer, gameId, time);
+    return data;
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+};
+
+export const sendAnswerMulti = async (idSocket, dtoSendAnswer) => {
+  try {
+    const data = await apiService.sendAnswerMulti(idSocket, dtoSendAnswer);
     return data;
   } catch (error) {
     Alert.alert("Error", error.message);
@@ -747,7 +902,27 @@ export const listGames = async (idUser) => {
     Alert.alert("Error", error.message);
     return null;
   }
-}
+};
+
+export const loadGameMulti = async (loadGameData, idSocket) => {
+  try {
+    const data = await apiService.loadGameMulti(loadGameData, idSocket);
+    return data;
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+};
+
+export const initgameMulti = async (idPartida,dtoinitGameMultiRequest) => {
+  try {
+    const data = await apiService.initgameMulti(idPartida,dtoinitGameMultiRequest);
+    return data;
+  } catch (error) {
+    Alert.alert("Error", error.message);
+    return null;
+  }
+};
 
 export const rankingPartidasWin = async () => {
   try {
@@ -757,7 +932,7 @@ export const rankingPartidasWin = async () => {
     Alert.alert("Error", error.message);
     return null;
   }
-}
+};
 
 export const rankingPuntaje = async () => {
   try {
@@ -767,7 +942,7 @@ export const rankingPuntaje = async () => {
     Alert.alert("Error", error.message);
     return null;
   }
-}
+};
 
 export const rankingTiempo = async () => {
   try {
@@ -777,7 +952,7 @@ export const rankingTiempo = async () => {
     Alert.alert("Error", error.message);
     return null;
   }
-}
+};
 
 export const getImageProfile = async (username) => {
   try {
@@ -787,4 +962,4 @@ export const getImageProfile = async (username) => {
     Alert.alert("Error", error.message);
     return null;
   }
-}
+};

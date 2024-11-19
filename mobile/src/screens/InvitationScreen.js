@@ -1,30 +1,63 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SocketContext } from '../WebSocketProvider'; // Importa el contexto de tu WebSocket
 import { useNavigation } from '@react-navigation/native';
 
 const InvitationScreen = () => {
-  const [invitations, setInvitations] = useState([]);
-  const { invitationCollection, setInvitationCollection, client } = useContext(SocketContext); // Usamos invitationCollection desde el contexto
+
   const navigation = useNavigation();
+  const [invitations, setInvitations] = useState([]);
+  const [isWaiting, setIsWaiting] = useState(false); // Controla si se muestra la sala de espera
+  const [waitingData, setWaitingData] = useState(null); // Almacena la información del juego para la sala de espera
+  const [userObj, setUserObj] = useState({}); // Estado para userObj
+  const { invitationCollection, setInvitationCollection, client, invitation, suscribeToGameSocket,implementationGameBody,setImplementationGameBody,gameId } = useContext(SocketContext);
+
+  useEffect(() => {
+    return () => {
+        setImplementationGameBody(null); // Reinicia el estado al desmontar
+    };
+}, []);
+
+useEffect(() => {
+  const loadUser = async () => {
+    try {
+      // Obtener el dato almacenado en AsyncStorage
+      const jsonValue = await AsyncStorage.getItem('userObj');
+      if (jsonValue != null) {
+        const storedUser = JSON.parse(jsonValue); // Parsear el JSON
+        setUserObj(storedUser); // Establecer el estado con los datos recuperados
+        console.log('Usuario cargado desde AsyncStorage:', storedUser);
+      } else {
+        console.log('No se encontró un usuario en AsyncStorage.');
+      }
+    } catch (error) {
+      console.error('Error al obtener el usuario de AsyncStorage:', error);
+    }
+  };
+
+  loadUser(); // Llamar a la función al montar el componente
+}, []); // Se ejecuta solo al montar
+
 
   useEffect(() => {
     if (invitationCollection.length > 0) {
-      console.log("Nueva invitación recibida:", invitationCollection);
+     
       setInvitations((prevInvitations) => [
         ...prevInvitations,
         ...invitationCollection
-          .filter(invitation => invitation.userIdGuest !== invitation.userIdHost) // Filtrar autoinvitaciones
-          .map(invitation => ({
+          .filter((invitation) => invitation.userIdGuest !== invitation.userIdHost) // Filtrar autoinvitaciones
+          .map((invitation) => ({
             id: invitation.id || Date.now().toString(), // Genera un id único si no existe
             usernameHost: invitation.usernameHost,
             message: invitation.message,
             userIdHost: invitation.userIdHost,
             userIdGuest: invitation.userIdGuest,
-            status: 'Pendiente'
-          }))
+            gameId: invitation.gameId || 'pendingGameId',
+            status: 'Pendiente',
+          })),
       ]);
+
       setInvitationCollection([]); // Limpiar la colección de invitaciones después de procesarlas
     }
   }, [invitationCollection]);
@@ -46,20 +79,22 @@ const InvitationScreen = () => {
         usernameHost: invitation.usernameHost,
         usernameGuest: usernameGuest,
         accepted: accepted,
-        message: accepted ? `Aceptaste la invitación de ${invitation.usernameHost}` : `Rechazaste la invitación de ${invitation.usernameHost}`,
-        gameId: "",
+        message: accepted
+          ? `Aceptaste la invitación de ${invitation.usernameHost}`
+          : `Rechazaste la invitación de ${invitation.usernameHost}`,
+        gameId: invitation.gameId,
       };
 
-      console.log('Respuesta actualizada:', invitationData);
+      console.log('Respuesta actualizada:', JSON.stringify(invitationData, null, 2));
+      
 
       // Enviar la respuesta al servidor a través de WebSocket
       if (client.current) {
         client.current.send(`/topic/lobby/${invitation.userIdHost}`, {}, JSON.stringify(invitationData));
-        console.log('Respuesta enviada al servidor:', invitationData);
+        console.log('Respuesta enviada al servidor:', JSON.stringify(invitationData, null, 2));
       } else {
         console.log('No se pudo enviar la respuesta, cliente WebSocket no está disponible.');
       }
-
     } catch (error) {
       console.error("Error al recuperar el usernameGuest de AsyncStorage:", error);
     }
@@ -69,18 +104,28 @@ const InvitationScreen = () => {
     const invitation = invitations.find((inv) => inv.id === invitationId);
 
     if (invitation) {
-        setInviteResponse(true, invitation);
-        setInvitations((prevInvitations) =>
-            prevInvitations.filter((inv) => inv.id !== invitationId)
-        );
-        console.log('Invitación aceptada', '¡Disfruta el juego!');
-        
-        // Redirige a la pantalla de espera
-       // navigation.navigate('Waiting');
+      setInviteResponse(true, invitation);
+      setInvitations((prevInvitations) =>
+        prevInvitations.filter((inv) => inv.id !== invitationId)
+      );
+      console.log('Invitación aceptada');
+      const HostObj = {username: invitation.usernameHost, userId: invitation.userIdHost}
+      const Host = JSON.stringify(HostObj);
+      AsyncStorage.setItem('Guest', Host);
+
+
+      const Invitado = JSON.stringify(userObj);
+      AsyncStorage.setItem('Guest', Invitado);
+    
+      // Activar la sala de espera
+      setWaitingData({
+        gameId: invitation.gameId,
+        hostUsername: invitation.usernameHost,
+      });
+      setIsWaiting(true);
     }
   };
 
-  // Función para rechazar invitaciones
   const handleReject = (invitationId) => {
     const invitation = invitations.find((inv) => inv.id === invitationId);
 
@@ -92,6 +137,76 @@ const InvitationScreen = () => {
       Alert.alert('Invitación rechazada', 'La invitación fue rechazada.');
     }
   };
+  useEffect(() => {
+    if (invitation) {
+        handleInvitationInteraction(invitation);
+    }
+}, [invitation]);
+
+   // 2.1)
+   const handleInvitationInteraction = (invitation) => {
+    if (invitation) {
+        if (invitation.action === 'RESPONSE_IDGAME') {
+            suscribeToGameSocket(invitation.gameId);
+
+        } else {
+        
+        }
+    } else {
+        console.error("Invalid Invitation");
+    }
+};
+
+
+useEffect(() => {
+  if (implementationGameBody) {
+    if (implementationGameBody.status === "INVITE_RULETA") {
+      console.log("Estado INVITE_RULETA detectado. Navegando a Home...");
+
+      // Asegúrate de que ruletaGame y categories están definidos
+      if (implementationGameBody.ruletaGame && implementationGameBody.ruletaGame.categories) {
+        console.log("Categorias recibidas desde ruletaGame:", implementationGameBody.ruletaGame.categories);
+      } else {
+        console.log("No se encontraron categorías en ruletaGame");
+      }
+
+      setTimeout(() => {
+        navigation.navigate("SlotMachineMulti", {
+         
+            ruletaGame: implementationGameBody.ruletaGame,
+            finalSlot1: implementationGameBody.finalSlot1,
+            finalSlot2: implementationGameBody.finalSlot2,
+            finalSlot3: implementationGameBody.finalSlot3,
+            idGame: gameId,
+        
+        });
+      }, 3000);
+    }
+  }
+}, [implementationGameBody]);
+
+
+  // Lógica de la sala de espera
+  useEffect(() => {
+    if (isWaiting && client.current && waitingData?.gameId) {
+      console.log(`Suscribiéndose al canal del juego con ID: ${waitingData.gameId}`);
+      const subscription = client.current.subscribe(`/topic/game/${waitingData.gameId}`, (message) => {
+        const gameData = JSON.parse(message.body);
+        console.log('Datos del juego recibidos:', gameData);
+
+        // Si el juego comienza, puedes agregar lógica adicional aquí
+        if (gameData.status === 'STARTED') {
+          console.log('El juego ha comenzado');
+          // Ejemplo: navegar a la pantalla de juego
+        }
+      });
+
+      return () => {
+        console.log(`Cancelando la suscripción al canal del juego con ID: ${waitingData.gameId}`);
+        subscription.unsubscribe();
+      };
+    }
+  }, [isWaiting, waitingData, client]);
 
   // Renderiza cada invitación
   const renderInvitation = ({ item }) => (
@@ -115,6 +230,17 @@ const InvitationScreen = () => {
       </View>
     </View>
   );
+
+  // Render principal
+  if (isWaiting && waitingData) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Sala de Espera</Text>
+        <Text>Esperando que {waitingData.hostUsername || 'el anfitrión'} inicie la partida...</Text>
+        <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -149,7 +275,7 @@ const styles = StyleSheet.create({
     padding: 15,
     marginVertical: 10,
     borderRadius: 10,
-    elevation: 3, // Sombra para el efecto de tarjeta
+    elevation: 3,
   },
   host: {
     fontSize: 18,
@@ -177,6 +303,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
     fontWeight: 'bold',
+  },
+  loader: {
+    marginVertical: 20,
   },
   noInvitationsText: {
     textAlign: 'center',

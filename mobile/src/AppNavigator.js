@@ -19,6 +19,12 @@ import Config from './screens/Config';
 import RestorePassword from './screens/RestorePassword';
 import InvitationScreen from './screens/InvitationScreen';
 import Waiting from './screens/Waiting';
+import GameLoadMulti from './screens/multi/GameLoadMulti';
+import GuessPhraseMulti from './screens/multi/GuessPhraseMulti';
+import LoadingGameMulti from './screens/multi/LoadingGameMulti';
+import MultipleChoiceMulti from './screens/multi/MultipleChoiceMulti';
+import OrderWordMulti from './screens/multi/OrderWordMulti';
+import SlotMachineMulti from './screens/multi/SlotMachineMulti';
 
 const Stack = createNativeStackNavigator();
 
@@ -155,6 +161,36 @@ const AppNavigator = () => {
          <Stack.Screen
         name="Waiting"
         component={Waiting}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="GameLoadMulti"
+        component={GameLoadMulti}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="GuessPhraseMulti"
+        component={GuessPhraseMulti}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="LoadingGameMulti"
+        component={LoadingGameMulti}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="MultipleChoiceMulti"
+        component={MultipleChoiceMulti}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="OrderWordMulti"
+        component={OrderWordMulti}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="SlotMachineMulti"
+        component={SlotMachineMulti}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

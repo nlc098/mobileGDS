@@ -1,270 +1,324 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { SocketContext } from '../WebSocketProvider';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import HeaderMain from '../components/HeaderMain';
-import { useNavigation } from '@react-navigation/native';
-import { createGame } from '../CallsAPI';
+import { useNavigation,useRoute } from '@react-navigation/native';
+import {createGame,loadGame,loadGameMulti} from '../CallsAPI'
 
 const GameLobby = () => {
+    const navigation = useNavigation();
     const [players, setPlayers] = useState([]); // Lista de jugadores
     const [search, setSearch] = useState(''); // Texto de búsqueda
     const [filteredPlayers, setFilteredPlayers] = useState([]); // Lista de jugadores filtrados
-    const { users, client, invitation, invitationCount, setInvitationCount, invitationCollection, setInvitationCollection } = useContext(SocketContext);
-    const [gameId, setGameId] = useState('');
-    const [isHost, setIsHost] = useState(false);
+    const { users, client, invitation, setInvitationCollection,gameId, setGameId,suscribeToGameSocket,setInvitation,implementationGameBody,setImplementationGameBody,usernameHost,setUsernameHost} = useContext(SocketContext);
+    const [isWaiting, setIsWaiting] = useState(false); // Estado para mostrar la sala de espera
+    const [waitingData, setWaitingData] = useState({}); // Datos para la sala de espera
     const [userObj, setUserObj] = useState({}); // Estado para userObj
-    const navigation = useNavigation();
+    const [invitationSent, setInvitationSent] = useState(false);
+    const [loadGameData, setLoadGameData] = useState({});
+   
+    const route = useRoute();
+    const { selectedCategoryID } = route.params;
+    const [gameData, setGameData] = useState([]); 
 
     useEffect(() => {
-        const fetchUserData = async () => {
+        return () => {
+            setImplementationGameBody(null); // Reinicia el estado al desmontar
+            const Host = JSON.stringify(userObj);
+            AsyncStorage.setItem('Host', Host);
+        };
+    }, []);
+
+    useEffect(() => {
+        const loadUser = async () => {
+          try {
+            // Obtener el dato almacenado en AsyncStorage
+            const jsonValue = await AsyncStorage.getItem('userObj');
+            if (jsonValue != null) {
+              const storedUser = JSON.parse(jsonValue); // Parsear el JSON
+              setUserObj(storedUser); // Establecer el estado con los datos recuperados
+              console.log('Usuario cargado desde AsyncStorage:', storedUser);
+            } else {
+              console.log('No se encontró un usuario en AsyncStorage.');
+            }
+          } catch (error) {
+            console.error('Error al obtener el usuario de AsyncStorage:', error);
+          }
+        };
+    
+        loadUser(); // Llamar a la función al montar el componente
+      }, []); // Se ejecuta solo al montar
+    
+
+    useEffect(() => {
+        const fetchGameData = async () => {
             try {
-                const userId = await AsyncStorage.getItem("userId");
-                const username = await AsyncStorage.getItem("username");
-                const userObjString = await AsyncStorage.getItem("userObj");
-    
-                const parsedUserObj = userObjString ? JSON.parse(userObjString) : { username: '', userId: '' };
-    
-                setUserObj(parsedUserObj);  // Actualiza el estado de userObj con los datos obtenidos
+                const response = await loadGame(selectedCategoryID, 'Multiplayer');
+                setGameData(response);
             } catch (error) {
-                console.error("Error obteniendo los datos del usuario:", error);
+                Alert.alert("Error", "No se pudieron cargar los datos del juego");
             }
         };
     
-        fetchUserData();
-    }, []);
+        fetchGameData();
+    }, [selectedCategoryID]);
+    
 
-    // Remover elementos de AsyncStorage
     useEffect(() => {
-        const clearStorage = async () => {
-            try {
-                await AsyncStorage.removeItem("guest");
-                await AsyncStorage.removeItem("host");
-            } catch (error) {
-                console.error("Error limpiando el AsyncStorage:", error);
-            }
-        };
-
-        clearStorage(); // Llamada para limpiar el storage
-    }, []);
-
-    // Efecto para manejar invitaciones
-    useEffect(() => {
-        if (invitationCollection.length > 0) {
-            console.log("Nueva invitación recibida!");
-            console.log(invitationCollection);
+        if (users && userObj.userId) {
+            const filteredPlayers = users.filter(player => player.userId !== userObj.userId);
+            setPlayers(filteredPlayers);
+            setFilteredPlayers(filteredPlayers);
         }
-    }, [invitationCollection]);
+    }, [users, userObj.userId]);
 
-    const invitationData = {
-        action: "",          // INVITE, INVITE_RESPONSE, RESPONSE_IDGAME
-        userIdHost: "",      // INVITE, INVITE_RESPONSE, RESPONSE_IDGAME
-        usernameHost: "",    // INVITE
-        userIdGuest: "",     // INVITE, INVITE_RESPONSE, RESPONSE_IDGAME
-        usernameGuest: "",   // INVITE, INVITE_RESPONSE
-        gameId: "",          // RESPONSE_IDGAME
-        accepted: null,      // INVITE_RESPONSE, RESPONSE_IDGAME
-        message: "",         // INVITE, INVITE_RESPONSE
-    };
-
-    // Función para actualizar la invitación
-    function setInviteAction(usernameHost, userIdHost, userIdGuest, message) {
-        invitationData.action = "INVITE";
-        invitationData.userIdHost = userIdHost;
-        invitationData.usernameHost = usernameHost;
-        invitationData.userIdGuest = userIdGuest;
-        invitationData.message = message;
-        console.log('Datos de la invitación actualizados:', invitationData);
-    }
-
-    // Función para actualizar la respuesta del ID de la partida
-    function setResponseIdGame(idGame, message) {
-        invitationData.action = "RESPONSE_IDGAME";
-        invitationData.gameId = idGame;
-        invitationData.message = message;
-        console.log('Respuesta actualizada:', invitationData);
-    }
-
-
-    // Filtrado de jugadores basado en la búsqueda por username
+    // Función para manejar la búsqueda
     const handleSearch = (text) => {
         setSearch(text);
         if (text) {
             const filtered = players.filter(player =>
-                player.username.toLowerCase().includes(text.toLowerCase()) // Filtra por 'username'
+                player.username.toLowerCase().includes(text.toLowerCase())
             );
-            setFilteredPlayers(filtered); // Actualiza la lista filtrada
+            setFilteredPlayers(filtered);
         } else {
-            setFilteredPlayers(players); // Muestra todos los jugadores si no hay búsqueda
+            setFilteredPlayers(players);
         }
     };
 
-    useEffect(() => {
-        console.log("Usuarios conectados: ", users);  // Verifica la estructura de los datos
-        // Filtra al jugador actual de la lista
-        const filteredPlayers = users.filter(player => player.userId !== userObj.userId);
-        setPlayers(filteredPlayers);  // Guardamos la lista de objetos userObj sin el jugador actual
-        setFilteredPlayers(filteredPlayers);  // Actualizamos la lista filtrada cuando 'users' cambia
-    }, [users, userObj.userId]);
-    
+    // Enviar invitación
+    function sendInvitation(Guest) {
+        if (userObj.username && userObj.userId) {
+            const invitationData = {
+                action: "INVITE",
+                userIdHost: userObj.userId,
+                usernameHost: userObj.username,
+                userIdGuest: Guest.userId,
+                message: `${userObj.username} te ha invitado a jugar.`,
+            };
+            setUsernameHost(userObj.username);
+            const Invitado = JSON.stringify(userObj);
+            AsyncStorage.setItem('Guest', Invitado);
+            client.current.send(`/topic/lobby/${Guest.userId}`, {}, JSON.stringify(invitationData));
+            setWaitingData({
+                host: { id: userObj.userId, username: userObj.username },
+                guest: { id: Guest.userId, username: null }, // Aún no se conoce el username del invitado
+                gameId: 'pendingGameId',
+            });
+            setIsWaiting(true);
+        } else {
+            Alert.alert("Error", "No se pudo enviar la invitación. Verifica tu usuario.");
+        }
+    }
 
+    // Manejar aceptación de la invitación por parte del invitado
     useEffect(() => {
-        if (invitation) {
-            console.log("hola")
-            handleInvitationInteraction(invitation);
+        if (invitation && invitation.action === "INVITE_RESPONSE" && invitation.accepted) {
+            setWaitingData(prev => ({
+                ...prev,
+                guest: { id: invitation.userIdGuest, username: invitation.usernameGuest },
+            }));
         }
     }, [invitation]);
 
-    const handleInvitationInteraction = (invitation) => {
-        if (invitation) {
-            console.log(invitation.action);
-            switch (invitation.action) {
-                case 'INVITE':
-                    console.log("Se ha realizado una invitacion!");
-                    setInvitationCount(invitationCount+1);
-                    setInvitationCollection([...invitationCollection, invitation]);
-                    console.log(invitation);
-                    break;
-
-                case 'INVITE_RESPONSE':
-                    console.log("Se ha respondido a la invitacion!");
-                    handleResponse(invitation);
-                    break;
-
-                case 'RESPONSE_IDGAME':
-                    console.log("Se iniciara la partida!");
-                    client.current.subscribe(`/topic/game/${invitation.idGame}`);
-                    /*setTimeout(() => {
-                        navigate(PUBLIC_ROUTES.SELECTION_PHASE);
-                    }, 3000); // 3000 ms para esperar 3 segundos adicionales*/
-                    break;
-
-                default:
-                    console.warn("Action type not recognized:", buttonKey);
-            }
-        } else {
-            console.error("Invalid Invitation");
-        }
-    };
-
-    // Enviar la invitación al canal del destinatario del guest
-    function sendInvitation(userIdGuest) {
-        if (userObj.username && userObj.userId) {
-            setInviteAction(userObj.username, userObj.userId, userIdGuest, `${userObj.username} - Te ha invitado a jugar`);
-            client.current.send(`/topic/lobby/${userIdGuest}`, {}, JSON.stringify(invitationData));
-            setIsHost(true);
-    
-            // Redirigir al host a la sala de espera
-           // navigation.navigate('Waiting'); // Asegúrate de que 'WaitingScreen' sea el nombre correcto de la pantalla de espera
-        } else {
-            console.error("userObj no está definido correctamente");
-        }
-    }
-    
-    const handleResponse = (invitation) => {
+    const handleResponse = async (invitation) => {
         // Verificar si la invitación fue aceptada o rechazada
         if (invitation.accepted === false) {
-          console.log("Invitación rechazada.");
+            console.log("Invitación rechazada.");
         } else {
-          // Si la invitación es aceptada, continuamos con la creación del juego
-          console.log("Invitación aceptada. Continuando con el juego.");
-      
-          // Extraemos los datos necesarios de la invitación
-          const userHost = {
-            username: invitation.usernameHost,
-            userId: invitation.userIdHost
-          };
-      
-          const userGuest = {
-            username: invitation.usernameGuest,
-            userId: invitation.userIdGuest
-          };
-      
-          // Llamar a la función para crear el juego, pasando los datos del anfitrión e invitado
-          console.log("hola")
-          createGame(userHost, userGuest)
-            .then(response => {
-              if (response) {
-                const gameId = response;
-                console.log("Juego creado con éxito! ID del juego: ", gameId);
-      
-                // Enviar el mensaje de creación del juego a través del WebSocket
-                const messageSocket = {
-                  gameId: gameId,
-                  userHost: userHost,
-                  userGuest: userGuest
-                };
-      
-                console.log("Datos para WebSocket -> ", JSON.stringify(messageSocket, null, 2));
-                client.current.send("/app/game/create", {}, JSON.stringify(messageSocket)); // Enviar mensaje al WebSocket
-              } else {
-                console.error("Error: No se recibió un gameid válido en la respuesta.");
-              }
-            })
-            .catch(error => {
-              console.error("Error al crear el juego: ", error);
-            });
+            // Si la invitación es aceptada, continuamos con la creación del juego
+            console.log("Invitación aceptada. Continuando con el juego.");
+    
+            // Extraemos los datos necesarios de la invitación
+            const userHost = {
+                username: invitation.usernameHost,
+                userId: invitation.userIdHost
+            };
+    
+            const userGuest = {
+                username: invitation.usernameGuest,
+                userId: invitation.userIdGuest
+            };
+    
+            try {
+                // Llamar a la función para crear el juego, pasando los datos del anfitrión e invitado
+                const response = await createGame(userHost, userGuest);
+                if (response) {
+                    const gameId = response;
+                    console.log("Juego creado con éxito! ID del juego: ", gameId);
+    
+                    // Enviar el mensaje de creación del juego a través del WebSocket
+                    const messageSocket = {
+                        gameId: gameId,
+                        userHost: userHost,
+                        userGuest: userGuest,
+                    };
+    
+                    console.log("Datos para WebSocket -> ", JSON.stringify(messageSocket, null, 2));
+                    
+                    
+                    return gameId; // Devolver el gameId para usarlo después
+                } else {
+                    console.error("Error: No se recibió un gameId válido en la respuesta.");
+                }
+            } catch (error) {
+                console.error("Error al crear el juego: ", error);
+            }
         }
-      
+    
         // Imprimir la respuesta de la invitación para depuración
-        console.log('Respuesta a la invitación:', invitation);
-      };
-      
+        console.log('Respuesta a la invitación:', JSON.stringify(invitation, null, 2));
+    };
     
+
+// Iniciar la partida
+const startGame = async () => {
+  
+        try {
+             // Esperar a que handleResponse procese la invitación y obtener el gameId
+            const gameId = await handleResponse(invitation);
+            setGameId(gameId);
+            const invitationIdGame = {
+                action: "RESPONSE_IDGAME",
+                userIdHost: invitation.userIdHost,
+                userIdGuest: invitation.userIdGuest,
+                usernameHost: invitation.usernameHost,
+                usernameGuest: invitation.usernameGuest,
+                accepted: invitation.accepted,
+                message: invitation.message,
+                gameId: gameId,
+              };
+              setInvitation(invitationIdGame);
+              console.log("chau                 "+ JSON.stringify(invitationIdGame, null, 2))
+              client.current.send(`/topic/lobby/${invitationIdGame.userIdGuest}`, {}, JSON.stringify(invitationIdGame));
+              suscribeToGameSocket(gameId);
+            Alert.alert("Partida iniciada", "¡La partida ha comenzado!");
+            await initGameHost();
+        } catch (error) {
+            console.error("Error al iniciar la partida:", error);
+            Alert.alert("Error", "Hubo un problema al iniciar la partida.");
+        }
+
+};
+
+useEffect(() => {
+    if (gameId !== null) {
+        suscribeToGameSocket(gameId);
+        setInvitationSent(true); // Marcar que la invitación fue enviada
+    }
+}, [gameId]);
+
+
+    const getRandomItem = (array) => {
+        return array[Math.floor(Math.random() * array.length)];
+    };
+    // Se carga en la BD el inicio de la partida
+    const initGameHost = async () => {
+        try {
+            gameData.finalSlot1 = getRandomItem(gameData.categories[0].gameModes);
+            gameData.finalSlot2 = getRandomItem(gameData.categories[1].gameModes);
+            gameData.finalSlot3 = getRandomItem(gameData.categories[2].gameModes);
     
-// Renderizar un jugador en la lista
-const renderPlayer = ({ item }) => {
-    return (
+            console.log("Datos que se envían al servidor:", JSON.stringify(gameData, null, 2));
+            console.log("ID del juego:", gameId);
+    
+            // Llamar a `loadGameMulti` sin esperar un retorno
+            await loadGameMulti(gameData, gameId);
+    
+            console.log("El juego se cargó correctamente en el servidor");
+        } catch (error) {
+            console.error("Error al inicializar el juego:", error.message);
+            Alert.alert("Error", "No se pudieron cargar los datos del juego");
+        }
+    };
+    
+
+    // Luego de dar inicio a la partida redirecciona al host a la vista de la ruleta
+    useEffect(() => {
+        console.log("useEffect ejecutado. implementationGameBody:", implementationGameBody);
+
+        if (implementationGameBody) {
+            if (implementationGameBody.status === "INVITE_RULETA") {
+                console.log("Estado INVITE_RULETA detectado. Navegando a Home...");
+                setTimeout(() => {
+                    navigation.navigate("SlotMachineMulti", {
+                        
+                            ruletaGame: implementationGameBody.ruletaGame,
+                            finalSlot1: implementationGameBody.finalSlot1,
+                            finalSlot2: implementationGameBody.finalSlot2,
+                            finalSlot3: implementationGameBody.finalSlot3,
+                            idGame: gameId,
+                    
+                    });
+                }, 3000);
+            }
+        }
+    }, [implementationGameBody]);
+
+    // Componente para la sala de espera
+    const WaitingRoom = () => (
+        <View style={styles.waitingContainer}>
+            <Text style={styles.waitingTitle}>Sala de Espera</Text>
+            <Text>Host: {waitingData.host.username}</Text>
+            <Text>Invitado: {waitingData.guest.username || "Esperando..."}</Text>
+            <TouchableOpacity
+                style={[styles.startButton, !waitingData.guest.username && styles.disabledButton]}
+                onPress={startGame}
+                disabled={!waitingData.guest.username}
+            >
+                <Text style={styles.buttonText}>Iniciar partida</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    // Renderizar un jugador
+    const renderPlayer = ({ item }) => (
         <View style={styles.playerContainer}>
             <View style={styles.playerInfo}>
                 <Icon name="account-circle" size={40} color="#77492f" />
-                {/* Envuelve 'item.username' dentro de un componente <Text> */}
-                <Text style={styles.playerText}>{item.username}</Text> 
+                <Text style={styles.playerText}>{item.username}</Text>
             </View>
-            <View style={styles.playerActions}>
-                <TouchableOpacity style={styles.actionButton}
-                    onPress={() => sendInvitation(item.userId)}>
-                    <Icon name="person-add" size={20} color="#77492f" />
-                    <Text style={styles.actionText}>Invitar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton}>
-                    <Icon name="info" size={20} color="#77492f" />
-                    <Text style={styles.actionText}>Detalles</Text>
-                </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={styles.actionButton} onPress={() => sendInvitation(item)}>
+                <Icon name="person-add" size={20} color="#77492f" />
+                <Text style={styles.actionText}>Invitar</Text>
+            </TouchableOpacity>
         </View>
     );
-};
 
     return (
         <View style={styles.container}>
             <HeaderMain />
-            <Text style={styles.title}>Game Lobby</Text>
-            <View style={styles.searchContainer}>
-                <Icon name="search" size={24} color="#77492f" />
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Buscar..."
-                    placeholderTextColor="#77492f"
-                    value={search}
-                    onChangeText={handleSearch}
-                />
-                <Icon name="filter-list" size={24} color="#77492f" />
-                <Icon name="sort" size={24} color="#77492f" />
-            </View>
-            <FlatList
-                data={filteredPlayers} // Usamos los jugadores filtrados
-                renderItem={renderPlayer} // Usamos la función renderPlayer
-                keyExtractor={(item) => item.userId.toString()} // Usamos 'userId' como clave única
-                style={styles.playerList}
-            />
+            {isWaiting ? (
+                <WaitingRoom />
+            ) : (
+                <>
+                    <Text style={styles.title}>Game Lobby</Text>
+                    <View style={styles.searchContainer}>
+                        <Icon name="search" size={24} color="#77492f" />
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder="Buscar..."
+                            placeholderTextColor="#77492f"
+                            value={search}
+                            onChangeText={handleSearch}
+                        />
+                    </View>
+                    <FlatList
+                        data={filteredPlayers}
+                        renderItem={renderPlayer}
+                        keyExtractor={(item) => item.userId.toString()}
+                        style={styles.playerList}
+                    />
+                </>
+            )}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
+        width: "100%",
         flex: 1,
         alignItems:'center',
         backgroundColor: '#f6f3d4',
@@ -305,11 +359,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff1d0',
         borderRadius: 8,
         marginBottom: 10,
+        width: '100%', // Asegura que ocupa el 90% del ancho
+        alignSelf: 'center', // Centra el contenedor horizontalmente
     },
     playerInfo: {
         flexDirection: 'row',
         alignItems: 'center',
+        flex: 1, // Permite que el contenido se expanda dentro del 90%
     },
+    
     playerText: {
         fontSize: 18,
         color: '#77492f',

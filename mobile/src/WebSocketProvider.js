@@ -11,20 +11,20 @@ export const SocketProvider = ({ children }) => {
     const [users, setUsers] = useState([]);
     const [invitationCount, setInvitationCount] = useState(0);
     const [invitationCollection, setInvitationCollection] = useState([]);
-
+    const [isWaiting, setIsWaiting] = useState(false); // Nuevo estado para `isWaiting`
+    const [waitingData, setWaitingData] = useState(null); // Nuevo estado para datos de espera
+    const [gameId, setGameId] = useState(null);
+    const [implementationGameBody, setImplementationGameBody] = useState(null);
     const client = useRef(null);
+    const [usernameHost, setUsernameHost] = useState(null);
+    const [initGameModes, setInitGameModes] = useState({});
+    const [ answer, setAnswer ] = useState(null);
+    const [ isCorrectAnswer, setIsCorrectAnswer ] = useState(null);
 
     useEffect(() => {
         // Guarda los usuarios conectados en AsyncStorage
         AsyncStorage.setItem("connectedUsers", JSON.stringify(users));
     }, [users]);
-
-    useEffect(() => {
-        if (invitationCollection.length > 0) {
-            console.log("Nueva invitación recibida!");
-            console.log(invitationCollection);
-        }
-    }, [invitationCollection]);
 
     // Conexión al servidor WebSocket
     const connect = (dtoUserOnline) => {
@@ -73,34 +73,18 @@ export const SocketProvider = ({ children }) => {
         }
     };
 
-    // Función para manejar la respuesta a las invitaciones (Aceptar o Rechazar)
-    const handleInvitationResponse = async (invitationId, accepted) => {
-        const updatedInvitationCollection = invitationCollection.filter(
-            (invitation) => invitation.id !== invitationId
-        );
-        setInvitationCollection(updatedInvitationCollection);
-
-        // Eliminar de AsyncStorage también si es necesario
-        await AsyncStorage.setItem('invitations', JSON.stringify(updatedInvitationCollection));
-
-        if (accepted) {
-            console.log('Invitación aceptada');
-        } else {
-            console.log('Invitación rechazada');
-        }
-
-        // Aquí podrías enviar la respuesta al servidor si fuera necesario
-        // Ejemplo de mensaje que podrías enviar:
-        const invitationResponse = {
-            action: "INVITE_RESPONSE",
-            invitationId,
-            accepted,
-        };
-
+    const suscribeToGameSocket = (gameId) => {
         if (client.current) {
-            client.current.send(`/topic/lobby/${invitation.userIdHost}`, {}, JSON.stringify(invitationResponse));
+            client.current.subscribe(`/game/${gameId}/`, (message) => {
+                const implementGame = JSON.parse(message.body);
+                console.log("Recibido desde el socket: " + JSON.stringify(implementGame, null, 2));
+                setImplementationGameBody(implementGame);
+            });
         }
-    };
+        else{
+            console.error("Error con el cliente STOMP");
+        }
+    } 
 
     return (
         <SocketContext.Provider
@@ -115,7 +99,23 @@ export const SocketProvider = ({ children }) => {
                 setInvitationCount,
                 invitationCollection,
                 setInvitationCollection,
-                handleInvitationResponse,
+                isWaiting,  // Pasar el estado isWaiting
+                setIsWaiting,  // Pasar la función setIsWaiting
+                waitingData, // Pasar los datos de espera
+                setWaitingData, // Pasar la función setWaitingData
+                gameId, setGameId,
+                suscribeToGameSocket,
+                implementationGameBody,
+                setImplementationGameBody,
+                setGameId,
+                usernameHost,
+                setUsernameHost,
+                initGameModes,
+                setInitGameModes,
+                setAnswer, 
+                setIsCorrectAnswer,
+                answer,
+                isCorrectAnswer, 
             }}
         >
             {children}
