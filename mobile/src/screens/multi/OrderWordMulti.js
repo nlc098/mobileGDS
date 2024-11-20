@@ -19,7 +19,6 @@ const OrderWordMulti = ({ OWinfo }) => {
   const [resultMessage, setResultMessage] = useState('');
 
   useEffect(() => {
-    setIsCorrectAnswer(false);
     const words = word.split(' ');
     const shuffled = words.map(w => shuffleArray(w.split('')));
     setShuffledWords(shuffled);
@@ -67,7 +66,8 @@ const OrderWordMulti = ({ OWinfo }) => {
 		try {
       const selectedStrings = selectedOrder.map(selected => selected.join(''));
       const resultString = selectedStrings.join('');
-			const isCorrect = resultString === word;
+			const isCorrect = resultString == word;
+      console.log(resultString)
 			console.log(isCorrect ? "Correcto!" : "Incorrecto!");
 
 			if (isCorrect) {

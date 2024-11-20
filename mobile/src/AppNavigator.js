@@ -118,10 +118,13 @@ const AppNavigator = () => {
         component={MultiplayerGameSet}
         options={{ headerShown: false }}
       />
-        <Stack.Screen
+      <Stack.Screen
         name="MultiplayerLobby"
         component={MultiplayerLobby}
-        options={{ headerShown: false }}
+        options={{ 
+          headerShown: false,
+          unmountOnBlur: true, // Desmontar el componente al salir
+        }}
       />
       <Stack.Screen
         name="GameSet"

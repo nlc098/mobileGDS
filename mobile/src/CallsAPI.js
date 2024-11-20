@@ -505,6 +505,7 @@ async logout(username) {
     // Método para crear un juego multijugador
   async createGame(userHost, userGuest) {
     try {
+      console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
       const token = await this.getToken(); // Obtener el token del usuario
       if (!token) {
         throw new Error("Token no encontrado");

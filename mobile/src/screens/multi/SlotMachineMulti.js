@@ -78,9 +78,9 @@ const spin = async () => {
         navigation.navigate("LoadingGameMulti", { dtoinitGameMultiRequest });
       
     }else{ 
-      setTimeout(() => {
+      
       navigation.navigate("LoadingGameMulti", { dtoinitGameMultiRequest });
-    }, 5500);}
+   }
 
 
   }, spinDuration);

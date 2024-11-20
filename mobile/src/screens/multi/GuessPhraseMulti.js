@@ -9,7 +9,6 @@ const GuessPhraseMulti = ({ GPinfo}) => {
 	const [resultMessage, setResultMessage] = useState('');
 
 	useEffect(() => {
-    setIsCorrectAnswer(false);
 		setUserInput('');
 		setResultMessage('');
 	}, [GPinfo]);

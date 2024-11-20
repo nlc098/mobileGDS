@@ -11,7 +11,7 @@ const InvitationScreen = () => {
   const [isWaiting, setIsWaiting] = useState(false); // Controla si se muestra la sala de espera
   const [waitingData, setWaitingData] = useState(null); // Almacena la información del juego para la sala de espera
   const [userObj, setUserObj] = useState({}); // Estado para userObj
-  const { invitationCollection, setInvitationCollection, client, invitation, suscribeToGameSocket,implementationGameBody,setImplementationGameBody,gameId } = useContext(SocketContext);
+  const { invitationCollection, setInvitationCollection, client, invitation,setInvitation, suscribeToGameSocket,implementationGameBody,setImplementationGameBody,gameId } = useContext(SocketContext);
 
   useEffect(() => {
     return () => {
@@ -148,9 +148,6 @@ useEffect(() => {
     if (invitation) {
         if (invitation.action === 'RESPONSE_IDGAME') {
             suscribeToGameSocket(invitation.gameId);
-
-        } else {
-        
         }
     } else {
         console.error("Invalid Invitation");
@@ -160,28 +157,20 @@ useEffect(() => {
 
 useEffect(() => {
   if (implementationGameBody) {
-    if (implementationGameBody.status === "INVITE_RULETA") {
-      console.log("Estado INVITE_RULETA detectado. Navegando a Home...");
-
-      // Asegúrate de que ruletaGame y categories están definidos
-      if (implementationGameBody.ruletaGame && implementationGameBody.ruletaGame.categories) {
-        console.log("Categorias recibidas desde ruletaGame:", implementationGameBody.ruletaGame.categories);
-      } else {
-        console.log("No se encontraron categorías en ruletaGame");
+      if (implementationGameBody.status === "INVITE_RULETA") {
+          console.log("Estado INVITE_RULETA detectado. Navegando a Home..."+gameId);
+          setTimeout(() => {
+              navigation.navigate("SlotMachineMulti", {
+                  
+                      ruletaGame: implementationGameBody.ruletaGame,
+                      finalSlot1: implementationGameBody.finalSlot1,
+                      finalSlot2: implementationGameBody.finalSlot2,
+                      finalSlot3: implementationGameBody.finalSlot3,
+                      idGame: gameId,
+              
+              });
+          }, 3000);
       }
-
-      setTimeout(() => {
-        navigation.navigate("SlotMachineMulti", {
-         
-            ruletaGame: implementationGameBody.ruletaGame,
-            finalSlot1: implementationGameBody.finalSlot1,
-            finalSlot2: implementationGameBody.finalSlot2,
-            finalSlot3: implementationGameBody.finalSlot3,
-            idGame: gameId,
-        
-        });
-      }, 3000);
-    }
   }
 }, [implementationGameBody]);
 

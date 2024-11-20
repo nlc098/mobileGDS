@@ -12,7 +12,6 @@ const MultipleChoiceMulti = ({ MCinfo }) => {
   const { question, randomCorrectWord, randomWord1, randomWord2, randomWord3 } = MCinfo;
 
   useEffect(() => {
-      setIsCorrectAnswer(false);
       setSelectedAnswer(null);
       setConfirmedAnswer(null);
       setResultMessage('');

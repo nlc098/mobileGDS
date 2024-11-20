@@ -36,7 +36,6 @@ const GameLoadMulti = () => {
   const [userId, setUserId] = useState(null);
   const [hostAsync, setHostAsync] = useState(null);
   const [guestAsync, setGuestAsync] = useState(null);
-  
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentGameIndex, setCurrentGameIndex] = useState(null);
@@ -136,6 +135,7 @@ const GameLoadMulti = () => {
     // solo para multiplayer
 // solo para multiplayer
 useEffect(() => {
+ 
     if (implementationGameBody) {
         if (implementationGameBody.status === "FINISH_ROUND") {
             if (implementationGameBody.is_win) {
@@ -157,6 +157,7 @@ useEffect(() => {
             handleCorrectAnswer();
         }
     }
+  
 }, [implementationGameBody]);
 
 
@@ -180,11 +181,10 @@ useEffect(() => {
       console.log("Error", error.message);
       setIsCheckingAnswer(false); 
     }
-  };
+  }; 
 
   const handleCorrectAnswer = () => {
-    // Reiniciar los estados relevantes
-    setIsCorrectAnswer(false);
+    setIsCorrectAnswer(null);
     setIsCheckingAnswer(false);
     setTimeLeft(initialTime); // Reiniciar el tiempo restante
     timeUsed.current = 0; 
@@ -256,7 +256,6 @@ useEffect(() => {
 
 
   const renderGame = () => {
-    setIsCorrectAnswer(false);
     // Verifica si está en estado de carga
     if (loading) {
       return <ActivityIndicator size="large" color="#0000ff" />;

@@ -19,7 +19,7 @@ export const SocketProvider = ({ children }) => {
     const [usernameHost, setUsernameHost] = useState(null);
     const [initGameModes, setInitGameModes] = useState({});
     const [ answer, setAnswer ] = useState(null);
-    const [ isCorrectAnswer, setIsCorrectAnswer ] = useState(false);
+    const [ isCorrectAnswer, setIsCorrectAnswer ] = useState(null);
 
     useEffect(() => {
         // Guarda los usuarios conectados en AsyncStorage
