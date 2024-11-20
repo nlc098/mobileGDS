@@ -111,7 +111,7 @@ useEffect(() => {
       console.log('Invitación aceptada');
       const HostObj = {username: invitation.usernameHost, userId: invitation.userIdHost}
       const Host = JSON.stringify(HostObj);
-      AsyncStorage.setItem('Guest', Host);
+      AsyncStorage.setItem('Host', Host);
 
 
       const Invitado = JSON.stringify(userObj);

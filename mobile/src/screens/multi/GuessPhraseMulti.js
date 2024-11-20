@@ -2,13 +2,14 @@ import React, { useState, useEffect,useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { SocketContext } from '../../WebSocketProvider';
 
-const GuessPhraseMulti = ({ GPinfo, onCorrect }) => {
-	const { setAnswer, isCorrectAnswer, setIsCorrectAnswer,isCorrect,answer } = useContext(SocketContext);
+const GuessPhraseMulti = ({ GPinfo}) => {
+	const {setIsCorrectAnswer,isCorrect } = useContext(SocketContext);
 	const { phrase, correct_word } = GPinfo;
 	const [userInput, setUserInput] = useState('');
 	const [resultMessage, setResultMessage] = useState('');
 
 	useEffect(() => {
+    setIsCorrectAnswer(false);
 		setUserInput('');
 		setResultMessage('');
 	}, [GPinfo]);
@@ -24,8 +25,6 @@ const GuessPhraseMulti = ({ GPinfo, onCorrect }) => {
 				if (isCorrect) {
 					setIsCorrectAnswer(true);
 					setResultMessage("¡Correcto!");
-					await new Promise((resolve) => setTimeout(resolve, 1500));
-					onCorrect();
 				} else {
 					setResultMessage("Incorrecto. Intenta de nuevo.");
 				}

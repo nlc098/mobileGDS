@@ -2,8 +2,8 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SocketContext } from '../../WebSocketProvider';
 
-const MultipleChoiceMulti = ({ MCinfo, onCorrect }) => {
-  const { setAnswer, setIsCorrectAnswer,isCorrect } = useContext(SocketContext);
+const MultipleChoiceMulti = ({ MCinfo }) => {
+  const { setAnswer, setIsCorrectAnswer } = useContext(SocketContext);
 
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [confirmedAnswer, setConfirmedAnswer] = useState(null);
@@ -12,6 +12,7 @@ const MultipleChoiceMulti = ({ MCinfo, onCorrect }) => {
   const { question, randomCorrectWord, randomWord1, randomWord2, randomWord3 } = MCinfo;
 
   useEffect(() => {
+      setIsCorrectAnswer(false);
       setSelectedAnswer(null);
       setConfirmedAnswer(null);
       setResultMessage('');
@@ -21,21 +22,18 @@ const MultipleChoiceMulti = ({ MCinfo, onCorrect }) => {
   const allOptions = [randomCorrectWord, randomWord1, randomWord2, randomWord3];
 
   const handleCheckAnswer = async (selectedAnswer) => {
+    console.log("hola")
       if (!randomCorrectWord) {
           setResultMessage("Este juego aún no fue implementado.");
           return;
       }
       try {
-          const isCorrect = confirmedAnswer === randomCorrectWord;
+          const isCorrect = selectedAnswer === randomCorrectWord;
           if (isCorrect) {
               setIsCorrectAnswer(isCorrect);
               setResultMessage("¡Correcto!");
-              await new Promise(resolve => setTimeout(resolve, 1500));
-              onCorrect(); // Llama a la función que maneja la respuesta correcta
           } else {
               setResultMessage("Incorrecto. Intenta de nuevo.");
-              await new Promise(resolve => setTimeout(resolve, 1500));
-              onCorrect();
           }
       } catch (error) {
           console.error("Error al enviar la respuesta:", error);

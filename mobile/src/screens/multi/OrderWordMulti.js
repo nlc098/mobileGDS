@@ -11,14 +11,15 @@ const shuffleArray = (array) => {
   return array;
 };
 
-const OrderWordMulti = ({ OWinfo, onCorrect }) => {
-  const { setAnswer, setIsCorrectAnswer,isCorrect,answer } = useContext(SocketContext);
+const OrderWordMulti = ({ OWinfo }) => {
+  const { setAnswer, setIsCorrectAnswer} = useContext(SocketContext);
   const { word } = OWinfo;
   const [selectedOrder, setSelectedOrder] = useState([[]]);
   const [shuffledWords, setShuffledWords] = useState([]);
   const [resultMessage, setResultMessage] = useState('');
 
   useEffect(() => {
+    setIsCorrectAnswer(false);
     const words = word.split(' ');
     const shuffled = words.map(w => shuffleArray(w.split('')));
     setShuffledWords(shuffled);
@@ -64,16 +65,15 @@ const OrderWordMulti = ({ OWinfo, onCorrect }) => {
 
 	const handleVerify = async () => {
 		try {
-			const selectedString = selectedOrder.map(l => l.letter).join('');
-			const isCorrect = selectedString === word;
-
+      const selectedStrings = selectedOrder.map(selected => selected.join(''));
+      const resultString = selectedStrings.join('');
+			const isCorrect = resultString === word;
 			console.log(isCorrect ? "Correcto!" : "Incorrecto!");
 
 			if (isCorrect) {
+        console.log(isCorrect);
 				setIsCorrectAnswer(isCorrect);
 				setResultMessage('¡Correcto!');
-				await new Promise((resolve) => setTimeout(resolve, 1500));
-				onCorrect();
 			}
 			else {
 				setResultMessage('Incorrecto. Intenta de nuevo');

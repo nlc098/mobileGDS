@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.1.6:8080/api";
+const API_URL = "http://192.168.1.11:8080/api";
 
 // Función para decodificar el JWT, retorna el userId
 const decodeJWT = (token) => {
@@ -433,7 +433,7 @@ async logout(username) {
       }
     }
 
-  async sendAnswer(idGameSingle, userId, answer, gameId, time) {
+  async sendAnswer(idGameSingle, userId, gameId, time) {
     try {
       const token = await this.getToken(); // Obtener el token del usuario
       if (!token) {
@@ -465,34 +465,29 @@ async logout(username) {
     }
   }
 
-  async sendAnswerMulti (idSocket, dtoSendAnswer) {
+  async sendAnswerMulti(userId, gameId, gameModeId, time) {
     try {
-      const response = await fetch(`${API_URL}/game-multi/game/${idSocket}/play/`, {
+    
+      await fetch(`${API_URL}/game-multi/game/${gameId}/play/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json', // Asegúrate de enviar datos en formato JSON
+          'Content-Type': 'application/json', // Encabezado para indicar que el cuerpo es JSON
         },
-  
-        body: JSON.stringify(idSocket, dtoSendAnswer), // Convierte el objeto dtoSendAnswer a JSON
+        body: JSON.stringify({
+          idUserWin: userId,
+          idGameMulti: gameId,
+          idGame: gameModeId,
+          time_playing: time,
+        }), // Pasar directamente los datos al cuerpo
       });
   
-      // Verificar si la respuesta es exitosa
-      if (!response.ok) {
-        throw new Error('Error en la solicitud');
-      }
-  
-      // Obtener la respuesta en formato JSON
-      const data = await response.json();
-  
-      // Si la respuesta es exitosa, puedes manejar el mensaje
-      console.log('Respuesta del backend:', data);
-      
-  
+      console.log('Respuesta enviada correctamente');
     } catch (error) {
       // Manejo de errores
-      console.log('Error al enviar respuesta:', error);
+      console.error('Error al enviar respuesta:', error.message);
     }
-  };
+  }
+  
 
   async restorePassword(email) {
     try {
@@ -835,9 +830,9 @@ export const sendAnswer = async (idGameSingle, userId, answer, gameId, time) => 
   }
 };
 
-export const sendAnswerMulti = async (idSocket, dtoSendAnswer) => {
+export const sendAnswerMulti = async (userId, gameId, gameModeId, time) => {
   try {
-    const data = await apiService.sendAnswerMulti(idSocket, dtoSendAnswer);
+    const data = await apiService.sendAnswerMulti(userId, gameId, gameModeId, time);
     return data;
   } catch (error) {
     Alert.alert("Error", error.message);

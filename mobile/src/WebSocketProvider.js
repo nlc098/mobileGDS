@@ -19,7 +19,7 @@ export const SocketProvider = ({ children }) => {
     const [usernameHost, setUsernameHost] = useState(null);
     const [initGameModes, setInitGameModes] = useState({});
     const [ answer, setAnswer ] = useState(null);
-    const [ isCorrectAnswer, setIsCorrectAnswer ] = useState(null);
+    const [ isCorrectAnswer, setIsCorrectAnswer ] = useState(false);
 
     useEffect(() => {
         // Guarda los usuarios conectados en AsyncStorage
@@ -28,7 +28,7 @@ export const SocketProvider = ({ children }) => {
 
     // Conexión al servidor WebSocket
     const connect = (dtoUserOnline) => {
-        client.current = Stomp.over(() => new SockJS('http://192.168.1.6:8080/ws'));
+        client.current = Stomp.over(() => new SockJS('http://192.168.1.11:8080/ws'));
 
         if (dtoUserOnline === null) {
             console.error("DtoUserOnline NULL");

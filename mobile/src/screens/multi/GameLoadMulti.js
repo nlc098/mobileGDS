@@ -25,19 +25,22 @@ const dialogbubble = require("../../../assets/hint-globe.png");
 const GameLoadMulti = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { gameId, implementationGameBody, setGameId, setInitGameModes, initGameModes, isCorrectAnswer} = useContext(SocketContext); // Se obtiene el id del juego desde el contexto
+  const { gameId, implementationGameBody, setGameId, setInitGameModes, initGameModes, isCorrectAnswer,setIsCorrectAnswer} = useContext(SocketContext); // Se obtiene el id del juego desde el contexto
 
-
+ 
   const [answerData, setAnswerData] = useState([]);
 
   const timeUsed = useRef(0);
   const initialTime = 30;
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [userId, setUserId] = useState(null);
+  const [hostAsync, setHostAsync] = useState(null);
+  const [guestAsync, setGuestAsync] = useState(null);
+  
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentGameIndex, setCurrentGameIndex] = useState(null);
-
+  const [winner, setWinner] = useState(null);
   const [hints, setHints] = useState([]);
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
   const [hintCounter, setHintCounter] = useState(3);
@@ -47,36 +50,45 @@ const GameLoadMulti = () => {
   const [isCheckingAnswer, setIsCheckingAnswer] = useState(false); // Agregar estado para controlar si se está verificando la respuesta
 
   useEffect(() => {
-    const getUserId = async () => {
+    const getUserData = async () => {
       try {
-       
+        // Obtener userId
         const storedUserId = await AsyncStorage.getItem('userId');
         if (storedUserId !== null) {
-          setUserId(storedUserId)
-         
+          setUserId(storedUserId);
         } else {
           console.log('No userId found');
         }
+
+        // Obtener Host
+        const storedHost = await AsyncStorage.getItem('Host');
+        if (storedHost !== null) {
+          setHostAsync(storedHost);
+        } else {
+          console.log('No Host found');
+        }
+
+        // Obtener Guest
+        const storedGuest = await AsyncStorage.getItem('Guest');
+        if (storedGuest !== null) {
+          setGuestAsync(storedGuest);
+        } else {
+          console.log('No Guest found');
+        }
+
       } catch (error) {
-        console.log('Error getting userId:', error);
+        console.log('Error getting data from AsyncStorage:', error);
       }
     };
-  
-    getUserId(); // Llamar a la función para obtener el userId
-  }, []); // Solo se ejecuta una vez cuando el componente se monta
+
+    getUserData(); // Ejecutar la función
+  }, []); // Se ejecuta una sola vez al montar el componente
 
     useEffect(() => {
         if (Object.keys(initGameModes).length > 0) {
             setCurrentGameIndex(0);
         }
     }, [initGameModes]);
-
-    // Se actualiza el contenido del juego cada vez que cambie el índice
-    useEffect(() => {
-        if (currentGameIndex >= 0) {
-            setGameContent(renderGame());
-        }
-    }, [currentGameIndex]);
 
   useEffect(() => {
     if (implementationGameBody) {
@@ -87,6 +99,7 @@ const GameLoadMulti = () => {
   }, [implementationGameBody]);
 
   useEffect(() => {
+    console.log("ninini")
     if (isCorrectAnswer) {
         sendAnswerData();
     }
@@ -126,23 +139,22 @@ useEffect(() => {
     if (implementationGameBody) {
         if (implementationGameBody.status === "FINISH_ROUND") {
             if (implementationGameBody.is_win) {
-                setIsTimePlaying(false);
-                setIsModalOpen(true);
-                if (implementationGameBody.idUserWin == host.userId) {
-                    setWinner(host.username);
-                    console.log("Ganador: " + host.username);
+                if (implementationGameBody.idUserWin == hostAsync.userId) {
+                    setWinner(hostAsync.username);
+                    console.log("Ganador: " + hostAsync.username);
                 }
                 else {
-                    setWinner(guest.username);
-                    console.log("Ganador: " + guest.username);
+                    setWinner(guestAsync.username);
+                    console.log("Ganador: " + guestAsync.username);
                 }
                 console.log("Ganador Id: " + implementationGameBody.idUserWin);
             }
             else {
                 console.log("EMPATE!");
             }
-            handleNextGameMode();
+            
             console.log("FINISH ROUND!");
+            handleCorrectAnswer();
         }
     }
 }, [implementationGameBody]);
@@ -155,44 +167,42 @@ useEffect(() => {
       const gameInfo = data[currentGameKey].infoGame[0];
       const { id } = gameInfo;
       
-      const dtoinitGameMultiRequest = {
-        idUserWin: userId,
-        idGameMulti: gameId,
-        idGame: id,
-        time_playing: timeUsed.current
-    }
+      
+        const idUserWin= userId;
+        const idGameMulti= gameId;
+        const idGame= id;
+        const time_playing= timeUsed.current
+    
       setIsCheckingAnswer(true); 
-      const responseData = await sendAnswerMulti(gameId, dtoinitGameMultiRequest);
-      if (responseData) {
-        // Maneja respuesta true
-        return responseData;
-      } else {
-        setIsCheckingAnswer(false); // Reanudar el tiempo cuando la respuesta es correcta
-        // Manejo respuesta false
-        return responseData;
-      }
+      await sendAnswerMulti(idUserWin, idGameMulti, idGame, time_playing);
+     
     } catch (error) {
       console.log("Error", error.message);
-      setIsCheckingAnswer(false);  // Asegurarse de reanudar en caso de error
+      setIsCheckingAnswer(false); 
     }
   };
 
   const handleCorrectAnswer = () => {
-    setCurrentGameIndex(prevIndex => {
-      const nextIndex = prevIndex + 1;
-      if (nextIndex >= Object.keys(data).length) {
-        const { idGameSingle } = answerData;
-        setIsCheckingAnswer(false); // Reanudar el tiempo cuando la respuesta es correcta
-        navigation.navigate('GameFinished', { idGameSingle }); // Navegar a pantalla de resumen de partida
-        return prevIndex; // No cambiar el índice si hemos terminado
-      }
-      setIsCheckingAnswer(false)
-      setTimeLeft(initialTime); // Reiniciar el tiempo restante
-      timeUsed.current = 0;
-      setHints([]);
-      return nextIndex; // Cambiar al siguiente juego
-    });
+    // Reiniciar los estados relevantes
+    setIsCorrectAnswer(false);
+    setIsCheckingAnswer(false);
+    setTimeLeft(initialTime); // Reiniciar el tiempo restante
+    timeUsed.current = 0; 
+    setHints([]);
+  
+    const gameKeys = Object.keys(data); // Claves de los juegos
+    const nextIndex = currentGameIndex + 1; // Índice siguiente
+  
+    if (nextIndex >= gameKeys.length) {
+      // Si es la última fase, navega al resumen de partida
+      const { idGameSingle } = answerData;
+      navigation.navigate('GameFinished', { idGameSingle });
+    } else {
+      // Si no es la última fase, avanza al siguiente índice
+      setCurrentGameIndex(nextIndex);
+    }
   };
+  
 
   const showNextHint = () => {
     if (data && currentGameIndex < Object.keys(data).length && hintButtonEnabled) {
@@ -246,7 +256,7 @@ useEffect(() => {
 
 
   const renderGame = () => {
-
+    setIsCorrectAnswer(false);
     // Verifica si está en estado de carga
     if (loading) {
       return <ActivityIndicator size="large" color="#0000ff" />;
@@ -271,13 +281,13 @@ useEffect(() => {
         // Dependiendo del modo de juego, asignamos el componente adecuado
         switch (idModeGame) {
           case 'OW':
-            GameComponent = <OrderWord OWinfo={gameInfo} onCorrect={handleCorrectAnswer} />;
+            GameComponent = <OrderWord OWinfo={gameInfo}/>;
             break;
           case 'GP':
-            GameComponent = <GuessPhrase GPinfo={gameInfo} onCorrect={handleCorrectAnswer} />;
+            GameComponent = <GuessPhrase GPinfo={gameInfo}/>;
             break;
           case 'MC':
-            GameComponent = <MultipleChoice MCinfo={gameInfo} onCorrect={handleCorrectAnswer} />;
+            GameComponent = <MultipleChoice MCinfo={gameInfo}/>;
             break;
           default:
             GameComponent = <Text>Modo de juego no reconocido.</Text>;
@@ -333,7 +343,7 @@ useEffect(() => {
         </View>
       </View>
       {hintButton()}
-      {gameContent}
+      {renderGame()}
     </ImageBackground>
   );
 };
