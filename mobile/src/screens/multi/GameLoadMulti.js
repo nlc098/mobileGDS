@@ -1,7 +1,6 @@
 import { useRoute, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState, useContext,useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import { sendAnswer,sendAnswerMulti } from '../../CallsAPI';
 import MultipleChoice from './MultipleChoiceMulti';
 import OrderWord from './OrderWordMulti';
@@ -309,10 +308,6 @@ useEffect(() => {
 
   return (
     <ImageBackground source={fondo} style={styles.container}>
-      <View style={styles.topRow}>
-        <AntDesign name="questioncircle" size={50} color="black" />
-      </View>
-
       <View style={styles.timerContainer}>
         <View style={styles.circle}>
           <Text style={styles.timerText}>{timeLeft}</Text>
@@ -364,16 +359,16 @@ const styles = StyleSheet.create({
   },
   timerContainer: {
     position: "absolute",
-    top: 130,
+    top: 100,
     right: 40,
     justifyContent: "center",
     alignItems: "center",
   },
   circle: {
-    width: 70,
-    height: 70,
+    width: 80,
+    height: 80,
     borderRadius: 40,
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: "black",
     justifyContent: "center",
     alignItems: "center",
@@ -384,7 +379,7 @@ const styles = StyleSheet.create({
     color: "black",
   },
   brainContainer: {
-    top: 15,
+    top: -40,
     left: 0,
     position: "absolute",
   },
@@ -397,7 +392,7 @@ const styles = StyleSheet.create({
   },
   speechBubbleContainer: {
     position: "absolute",
-    top: 100,
+    top: 50,
     right: 200,
     alignItems: "center",
     justifyContent: "center",
@@ -422,7 +417,7 @@ const styles = StyleSheet.create({
     ellipsizeMode: "tail", // Mostrar elipsis si desborda
   },
   questionContainer: {
-    marginTop: 230,
+    marginTop: 280,
     width: "90%",
     height: 500,
     backgroundColor: "#F9F5DC",
@@ -450,8 +445,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     alignItems: "center",
     justifyContent: "center",
-    top: 250,
-    right: 40,
+    top: 210,
+    right: 50,
   },
   disabledButton: {
     backgroundColor: "#f0f0f0", // Color de fondo deshabilitado

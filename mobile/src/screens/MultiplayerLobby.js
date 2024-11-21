@@ -246,11 +246,11 @@ const GameLobby = () => {
         <View style={styles.waitingContainer}>
             <Text style={styles.waitingTitle}>Sala de Espera</Text>
             <Text>Host: {waitingData.host.username}</Text>
-            <Text>Invitado: {invitadoPrueba ? invitadoPrueba.username : "Esperando..."}</Text>
+            <Text>Invitado: {waitingData.guest.username || "Esperando..."}</Text>
             <TouchableOpacity
-                style={[styles.startButton, !invitadoPrueba && styles.disabledButton]}
+                style={[styles.startButton, !waitingData.guest.username && styles.disabledButton]}
                 onPress={initGameHost}
-                disabled={!invitadoPrueba}
+                disabled={!waitingData.guest.username}
             >
                 <Text style={styles.buttonText}>Iniciar partida</Text>
             </TouchableOpacity>
@@ -372,9 +372,42 @@ const styles = StyleSheet.create({
         fontSize: 12,
     },
     disabledButton: {
-        backgroundColor: '#cccccc', // Cambia a un color más claro
+        backgroundColor: '#cccccc', 
         borderColor: '#aaaaaa',
     },
+    waitingContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 20,
+      },
+      waitingTitle: {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: "#653532", // Color marrón oscuro
+        marginBottom: 20,
+      },
+      text: {
+        fontSize: 18,
+        color: "#333", // Color del texto
+        marginBottom: 10,
+      },
+      startButton: {
+        backgroundColor: "#B36F6F", // Color marrón oscuro
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+        marginTop: 20,
+      },
+      disabledButton: {
+        backgroundColor: "#878787", // Color más claro para deshabilitado
+      },
+      buttonText: {
+        fontSize: 18,
+        color: "#F9F5DC", // Texto claro
+        fontWeight: "bold",
+        textAlign: "center",
+      },
     
 });
 

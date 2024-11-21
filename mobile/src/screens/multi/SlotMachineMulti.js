@@ -6,6 +6,10 @@ import BackImage from "../../styles/BackImage";
 import { SocketContext } from "../../WebSocketProvider";
 import {fetchMultiplayerGame} from "../../CallsAPI"
 
+const dialogbubble = require("../../../assets/hint-globe.png");
+const brainpointing = require("../../../assets/brain_pointing.png");
+
+
 const MultiplayerGameSet = () => {
   const { usernameHost, setGameId } = useContext(SocketContext);
   const route = useRoute();
@@ -48,6 +52,7 @@ const spin = async () => {
   }, spinDuration * 0.05);
 
   setTimeout(async () => {
+    console.log(ruletaGame.categories);
     clearInterval(spinInterval);
 
     setSlot1(finalSlot1);
@@ -99,13 +104,23 @@ const spin = async () => {
 
   return (
     <BackImage>
-      <View style={styles.container}>
+      <View style={styles.container}> 
+      <Image
+            source={brainpointing}
+            resizeMode="contain"
+            style={styles.brainDialog}
+          />
         <View style={styles.speechBubbleContainer}>
+        <Image
+            source={dialogbubble}
+            resizeMode="contain"
+            style={styles.speechBubble}
+          />
           <View style={styles.textContainer}>
-            <Text style={styles.bubbleText}>¡Los juegos serán!</Text>
+            <Text style={styles.bubbleText}>Los juegos serán...</Text>
           </View>
         </View>
-        <View style={styles.slotContainer}>
+        <View style={styles.slotRow}>
           <View style={styles.slotBox}>
             <Text style={styles.slotText}>{slot1}</Text>
           </View>
@@ -116,6 +131,19 @@ const spin = async () => {
             <Text style={styles.slotText}>{slot3}</Text>
           </View>
         </View>
+        {/* {showResults && (
+        <View style={styles.resultContainer}>
+          {items.map((item, index) => {
+            // Mostrar resultados solo si hay gameModes
+            if (item.gameModes.length > 0) {
+              return (
+                <Text key={index} style={styles.resultText}>{item.name}: {results[index]}</Text>
+              );
+            }
+            return null; // No mostrar nada si no hay gameModes
+          })}
+        </View>
+      )} */}
         {isSpinning && <ActivityIndicator size="large" color="#fff" style={styles.loader} />}
       </View>
     </BackImage>
@@ -153,6 +181,8 @@ const styles = StyleSheet.create({
   textContainer: {
     position: "absolute",
     top: 45,
+    justifyContent: "center",
+    alignItems: "center",
     alignItems: "center",
     paddingHorizontal: 5,
   },
@@ -160,25 +190,45 @@ const styles = StyleSheet.create({
     color: "#333",
     fontSize: 20,
     textAlign: "center",
+    numberOfLines: 3,
+    ellipsizeMode: "tail",
   },
-  slotContainer: {
+  slotRow: {
     flexDirection: "row",
-    marginTop: 20,
+    marginTop: 120,
+    borderWidth: 2,
+    borderColor: "black",
+    backgroundColor: "#653532",
+    padding: 10,
+    borderRadius: 10,
   },
   slotBox: {
     width: 100,
     height: 80,
-    borderWidth: 2,
+    borderWidth: 4,
     borderColor: "#F9F5DC",
     justifyContent: "center",
     alignItems: "center",
     marginHorizontal: 5,
-    backgroundColor: "#653532",
+    backgroundColor: "#B36F6F",
   },
   slotText: {
     color: "#F9F5DC",
     fontSize: 24,
     textAlign: "center",
+  },
+  resultContainer: {
+    marginTop: 20,
+    borderWidth: 2,
+    borderColor: "black",
+    backgroundColor: "#653532",
+    padding: 10,
+    borderRadius: 10,
+    alignItems: "flex-start",
+  },
+  resultText: {
+    fontSize: 18,
+    color: "#F9F5DC",
   },
   loader: {
     marginTop: 20,
