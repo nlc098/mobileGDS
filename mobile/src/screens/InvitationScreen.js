@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SocketContext } from '../WebSocketProvider'; // Importa el contexto de tu WebSocket
 import { useNavigation } from '@react-navigation/native';
@@ -232,6 +232,11 @@ useEffect(() => {
   }
 
   return (
+    <ImageBackground 
+    source={require('../../assets/fondo_mobile.jpeg')} 
+    style={styles.image} 
+    resizeMode="cover" 
+  >
     <View style={styles.container}>
       <Text style={styles.title}>Invitaciones Recibidas</Text>
       {invitations.length === 0 ? (
@@ -244,20 +249,24 @@ useEffect(() => {
         />
       )}
     </View>
+  </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  image: {
+    flex: 1, 
+  },
   container: {
     flex: 1,
-    paddingTop: 20,
-    paddingHorizontal: 10,
-    backgroundColor: '#f4f4f4',
+    alignItems: 'center',
+    justifyContent: 'start',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    marginTop:50
   },
   invitationCard: {
     backgroundColor: '#fff',
