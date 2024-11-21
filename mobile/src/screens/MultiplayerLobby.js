@@ -393,14 +393,14 @@ const styles = StyleSheet.create({
         marginBottom: 10,
       },
       startButton: {
-        backgroundColor: "#B36F6F", // Color marrón oscuro
+        backgroundColor: "#B36F6F", 
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 8,
         marginTop: 20,
       },
       disabledButton: {
-        backgroundColor: "#878787", // Color más claro para deshabilitado
+        backgroundColor: "#878787", 
       },
       buttonText: {
         fontSize: 18,

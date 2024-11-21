@@ -266,10 +266,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    marginTop:50
+    marginTop: 70,
   },
   invitationCard: {
-    backgroundColor: '#fff',
+    backgroundColor: "#B36F6F",
     padding: 15,
     marginVertical: 10,
     borderRadius: 10,
@@ -278,15 +278,18 @@ const styles = StyleSheet.create({
   host: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: 'white',
   },
   message: {
     fontSize: 16,
     marginVertical: 5,
+    color: 'white',
   },
   status: {
     fontSize: 14,
     color: '#555',
     marginBottom: 10,
+    color: 'white',
   },
   buttonsContainer: {
     flexDirection: 'row',
