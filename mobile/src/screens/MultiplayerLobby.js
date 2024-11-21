@@ -21,6 +21,7 @@ const GameLobby = () => {
     const [invitationSent, setInvitationSent] = useState(false);
     const [continuar, setContinuar] = useState(null);
     const route = useRoute();
+    const [invitadoPrueba, setInvitadoPrueba] = useState(null)
     const { selectedCategoryID } = route.params;
     const [gameData, setGameData] = useState([]); 
 
@@ -97,6 +98,7 @@ const GameLobby = () => {
         client.current.send(`/topic/lobby/${userGuest.userId}`, {}, JSON.stringify(invitationData));
         setUsernameHost(userObj.username);
         const Invitado = JSON.stringify(userObj);
+        setInvitadoPrueba(Invitado);
         AsyncStorage.setItem('Guest', Invitado);
         setWaitingData({
             host: { id: userObj.userId, username: userObj.username },
@@ -105,7 +107,7 @@ const GameLobby = () => {
         });
         setIsWaiting(true);
     }
-
+ 
     // 2)
     // Se gestiona que accion realizar dependiendo de la respuesta de la invitacion del socket
     useEffect(() => {
@@ -121,7 +123,6 @@ const GameLobby = () => {
         if (invitation) {
             console.log("2   ", JSON.stringify(invitation, null, 2));
             if (invitation.action === 'INVITE_RESPONSE') {
-                //console.log("Se ha respondido a la invitación!");
                 setWaitingData(prev => ({
                     ...prev,
                     guest: { id: invitation.userIdGuest, username: invitation.usernameGuest },
@@ -132,6 +133,7 @@ const GameLobby = () => {
             console.error("Invalid Invitation");
         }
     };
+    
 
     // 3) solo guest si acepta (esto se gestiona en la vista de invitations)
     // solo si soy host
@@ -244,16 +246,17 @@ const GameLobby = () => {
         <View style={styles.waitingContainer}>
             <Text style={styles.waitingTitle}>Sala de Espera</Text>
             <Text>Host: {waitingData.host.username}</Text>
-            <Text>Invitado: {waitingData.guest.username || "Esperando..."}</Text>
+            <Text>Invitado: {invitadoPrueba ? invitadoPrueba.username : "Esperando..."}</Text>
             <TouchableOpacity
-                style={[styles.startButton, !waitingData.guest.username && styles.disabledButton]}
+                style={[styles.startButton, !invitadoPrueba && styles.disabledButton]}
                 onPress={initGameHost}
-                disabled={!waitingData.guest.username}
+                disabled={!invitadoPrueba}
             >
                 <Text style={styles.buttonText}>Iniciar partida</Text>
             </TouchableOpacity>
         </View>
     );
+    
 
     // Renderizar un jugador
     const renderPlayer = ({ item }) => (
@@ -368,6 +371,11 @@ const styles = StyleSheet.create({
         color: '#77492f',
         fontSize: 12,
     },
+    disabledButton: {
+        backgroundColor: '#cccccc', // Cambia a un color más claro
+        borderColor: '#aaaaaa',
+    },
+    
 });
 
 export default GameLobby;
