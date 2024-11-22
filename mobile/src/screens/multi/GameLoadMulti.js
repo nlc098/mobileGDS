@@ -12,7 +12,8 @@ import {
   ImageBackground,
   Image,
   ActivityIndicator,
-  TouchableOpacity
+  TouchableOpacity,
+  Modal
 } from "react-native";
 import { SocketContext } from '../../WebSocketProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -33,8 +34,8 @@ const GameLoadMulti = () => {
   const initialTime = 30;
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [userId, setUserId] = useState(null);
-  const [hostAsync, setHostAsync] = useState(null);
-  const [guestAsync, setGuestAsync] = useState(null);
+  const [storedHost, setHostAsync] = useState(null);
+  const [storedGuest, setGuestAsync] = useState(null);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentGameIndex, setCurrentGameIndex] = useState(null);
@@ -47,6 +48,10 @@ const GameLoadMulti = () => {
   const [gameContent, setGameContent] = useState(null);
   const [isCheckingAnswer, setIsCheckingAnswer] = useState(false); // Agregar estado para controlar si se está verificando la respuesta
 
+  // Estados para el modal
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  
   useEffect(() => {
     const getUserData = async () => {
       try {
@@ -54,33 +59,36 @@ const GameLoadMulti = () => {
         const storedUserId = await AsyncStorage.getItem('userId');
         if (storedUserId !== null) {
           setUserId(storedUserId);
+          console.log('UserId obtenido:', storedUserId);
         } else {
-          console.log('No userId found');
+          console.log('No se encontró el UserId');
         }
-
+  
         // Obtener Host
         const storedHost = await AsyncStorage.getItem('Host');
         if (storedHost !== null) {
-          setHostAsync(storedHost);
+          setHostAsync(JSON.parse(storedHost));  // Parsear el string JSON a objeto
+          console.log('Host obtenido:', storedHost);
         } else {
-          console.log('No Host found');
+          console.log('No se encontró el Host');
         }
-
+  
         // Obtener Guest
         const storedGuest = await AsyncStorage.getItem('Guest');
         if (storedGuest !== null) {
-          setGuestAsync(storedGuest);
+          setGuestAsync(JSON.parse(storedGuest));  // Parsear el string JSON a objeto
+          console.log('Guest obtenido:', storedGuest);
         } else {
-          console.log('No Guest found');
+          console.log('No se encontró el Guest');
         }
-
       } catch (error) {
-        console.log('Error getting data from AsyncStorage:', error);
+        console.log('Error al obtener datos desde AsyncStorage:', error);
       }
     };
-
+  
     getUserData(); // Ejecutar la función
   }, []); // Se ejecuta una sola vez al montar el componente
+  
 
     useEffect(() => {
         if (Object.keys(initGameModes).length > 0) {
@@ -97,7 +105,6 @@ const GameLoadMulti = () => {
   }, [implementationGameBody]);
 
   useEffect(() => {
-    console.log("ninini")
     if (isCorrectAnswer) {
         sendAnswerData();
     }
@@ -134,30 +141,69 @@ const GameLoadMulti = () => {
     // solo para multiplayer
 // solo para multiplayer
 useEffect(() => {
- 
-    if (implementationGameBody) {
-        if (implementationGameBody.status === "FINISH_ROUND") {
-            if (implementationGameBody.is_win) {
-                if (implementationGameBody.idUserWin == hostAsync.userId) {
-                    setWinner(hostAsync.username);
-                    console.log("Ganador: " + hostAsync.username);
-                }
-                else {
-                    setWinner(guestAsync.username);
-                    console.log("Ganador: " + guestAsync.username);
-                }
-                console.log("Ganador Id: " + implementationGameBody.idUserWin);
-            }
-            else {
-                console.log("EMPATE!");
-            }
-            
-            console.log("FINISH ROUND!");
-            handleCorrectAnswer();
+  if (implementationGameBody) {
+    if (implementationGameBody.status === "FINISH_ROUND") {
+      let message = "";
+
+      // Verifica si el usuario actual es el Host o el Guest
+      const isHost = userId == storedHost.userId;
+      const isGuest = userId == storedGuest.userId;
+
+      // Asigna un nombre genérico si el username está vacío
+      const hostName = storedHost.username || "Host";
+      const guestName = storedGuest.username || "Invitado";
+
+      if (implementationGameBody.is_win) {
+        // Si gana el Host
+        if (implementationGameBody.idUserWin == storedHost.userId) {
+          setWinner(hostName);
+
+          // Si eres el Host, ganaste; de lo contrario, perdiste
+          if (isHost) {
+            message = "🎉 ¡Ganaste la ronda! 🎉";
+            console.log("Ganador: Tú (Host)");
+          } else {
+            message = `😢 ${hostName} ganó la ronda. 😢`;
+            console.log("Ganador: " + hostName);
+          }
+        } 
+        // Si gana el Guest
+        else if (implementationGameBody.idUserWin == storedGuest.userId) {
+          setWinner(guestName);
+
+          // Si eres el Guest, ganaste; de lo contrario, perdiste
+          if (isGuest) {
+            message = "🎉 ¡Ganaste la ronda! 🎉";
+            console.log("Ganador: Tú (Guest)");
+          } else {
+            message = `😢 ${guestName} ganó la ronda. 😢`;
+            console.log("Ganador: " + guestName);
+          }
         }
+        console.log("Ganador Id: " + implementationGameBody.idUserWin);
+      } else {
+        // Si no hay ganador, es un empate
+        message = "🤝 ¡Empate! 🤝";
+        console.log("EMPATE!");
+      }
+
+      // Actualiza el modal con el mensaje correspondiente
+      setModalMessage(message);
+      setModalVisible(true);
+
+      // Mostrar el modal durante 2 segundos antes de pasar al siguiente modo
+      setTimeout(() => {
+        setModalVisible(false);
+        handleCorrectAnswer();
+      }, 2000);
+
+      console.log("FINISH ROUND!");
     }
-  
+  }
 }, [implementationGameBody]);
+
+
+
 
 
   const sendAnswerData = async () => {
@@ -308,6 +354,22 @@ useEffect(() => {
 
   return (
     <ImageBackground source={fondo} style={styles.container}>
+
+     {/* Modal de acierto */}
+     <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>{modalMessage}</Text>
+          </View>
+        </View>
+      </Modal>
+
+
       <View style={styles.timerContainer}>
         <View style={styles.circle}>
           <Text style={styles.timerText}>{timeLeft}</Text>
@@ -350,6 +412,34 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f9fa",
     paddingTop: 20,
   },
+  
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Esto oscurece el fondo
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#F9F5DC", // Fondo sólido del modal
+    height: 200,  // Aumenta el valor de 500 a un valor mayor
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    shadowColor: "#000", // Sombra para dar efecto
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5, // Sombra para Android
+    justifyContent: "center", // Centra el contenido dentro del modal
+  },
+  modalText: {
+    fontSize: 30,
+    color: "#653532", // Color de texto
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  
+
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",

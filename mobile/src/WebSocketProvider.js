@@ -28,7 +28,7 @@ export const SocketProvider = ({ children }) => {
 
     // Conexión al servidor WebSocket
     const connect = (dtoUserOnline) => {
-        client.current = Stomp.over(() => new SockJS('http://192.168.0.103:8080/ws'));
+        client.current = Stomp.over(() => new SockJS('http://192.168.1.11:8080/ws'));
 
         if (dtoUserOnline === null) {
             console.error("DtoUserOnline NULL");
@@ -36,18 +36,18 @@ export const SocketProvider = ({ children }) => {
         }
 
         client.current.connect({}, () => {
-            console.log("Usuario conectado!");
+            //console.log("Usuario conectado!");
 
             // Suscripción a usuarios en el lobby
             client.current.subscribe('/topic/lobby', (message) => {
-                console.log(message.body);
+                //console.log(message.body);
                 setUsers(JSON.parse(message.body)); 
             });
 
             // Suscripción a invitaciones de un usuario específico
             client.current.subscribe(`/topic/lobby/${dtoUserOnline.userId}`, (message) => {
                 const invitationBody = JSON.parse(message.body);
-                console.log(invitationBody);
+                //console.log(invitationBody);
                 setInvitation(invitationBody);
 
                 // Agregar la invitación a la colección si no está ya en ella
@@ -77,7 +77,7 @@ export const SocketProvider = ({ children }) => {
         if (client.current) {
             client.current.subscribe(`/game/${gameId}/`, (message) => {
                 const implementGame = JSON.parse(message.body);
-                console.log("Recibido desde el socket: " + JSON.stringify(implementGame, null, 2));
+                //console.log("Recibido desde el socket: " + JSON.stringify(implementGame, null, 2));
                 setImplementationGameBody(implementGame);
             });
         }

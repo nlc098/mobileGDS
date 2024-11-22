@@ -25,9 +25,8 @@ useEffect(() => {
       // Obtener el dato almacenado en AsyncStorage
       const jsonValue = await AsyncStorage.getItem('userObj');
       if (jsonValue != null) {
-        const storedUser = JSON.parse(jsonValue); // Parsear el JSON
-        setUserObj(storedUser); // Establecer el estado con los datos recuperados
-        console.log('Usuario cargado desde AsyncStorage:', storedUser);
+        const storedUser = JSON.parse(jsonValue); // Parsear el JSON a un objeto
+        setUserObj(storedUser); // Establecer el estado con el objeto
       } else {
         console.log('No se encontró un usuario en AsyncStorage.');
       }
@@ -36,8 +35,9 @@ useEffect(() => {
     }
   };
 
-  loadUser(); // Llamar a la función al montar el componente
-}, []); // Se ejecuta solo al montar
+  loadUser();
+}, []);
+
 
 
   useEffect(() => {
@@ -85,13 +85,13 @@ useEffect(() => {
         gameId: invitation.gameId,
       };
 
-      console.log('Respuesta actualizada:', JSON.stringify(invitationData, null, 2));
+
       
 
       // Enviar la respuesta al servidor a través de WebSocket
       if (client.current) {
         client.current.send(`/topic/lobby/${invitation.userIdHost}`, {}, JSON.stringify(invitationData));
-        console.log('Respuesta enviada al servidor:', JSON.stringify(invitationData, null, 2));
+        
       } else {
         console.log('No se pudo enviar la respuesta, cliente WebSocket no está disponible.');
       }
@@ -108,14 +108,13 @@ useEffect(() => {
       setInvitations((prevInvitations) =>
         prevInvitations.filter((inv) => inv.id !== invitationId)
       );
-      console.log('Invitación aceptada');
-      const HostObj = {username: invitation.usernameHost, userId: invitation.userIdHost}
-      const Host = JSON.stringify(HostObj);
-      AsyncStorage.setItem('Host', Host);
-
-
-      const Invitado = JSON.stringify(userObj);
-      AsyncStorage.setItem('Guest', Invitado);
+      const HostObj = { username: invitation.usernameHost, userId: invitation.userIdHost };
+      
+      AsyncStorage.setItem('Host', JSON.stringify(HostObj)); // Convertir a JSON antes de guardar
+      
+      const InvitadoObj = { username: userObj.username, userId: userObj.userId};
+      
+      AsyncStorage.setItem('Guest', JSON.stringify(InvitadoObj)); // Convertir a JSON antes de guardar
     
       // Activar la sala de espera
       setWaitingData({
@@ -158,7 +157,7 @@ useEffect(() => {
 useEffect(() => {
   if (implementationGameBody) {
       if (implementationGameBody.status === "INVITE_RULETA") {
-          console.log("Estado INVITE_RULETA detectado. Navegando a Home..."+gameId);
+
           setTimeout(() => {
               navigation.navigate("SlotMachineMulti", {
                   
@@ -169,7 +168,7 @@ useEffect(() => {
                       idGame: gameId,
               
               });
-          }, 3000);
+          }, 1000);
       }
   }
 }, [implementationGameBody]);
@@ -178,10 +177,8 @@ useEffect(() => {
   // Lógica de la sala de espera
   useEffect(() => {
     if (isWaiting && client.current && waitingData?.gameId) {
-      console.log(`Suscribiéndose al canal del juego con ID: ${waitingData.gameId}`);
       const subscription = client.current.subscribe(`/topic/game/${waitingData.gameId}`, (message) => {
         const gameData = JSON.parse(message.body);
-        console.log('Datos del juego recibidos:', gameData);
 
         // Si el juego comienza, puedes agregar lógica adicional aquí
         if (gameData.status === 'STARTED') {
@@ -191,7 +188,6 @@ useEffect(() => {
       });
 
       return () => {
-        console.log(`Cancelando la suscripción al canal del juego con ID: ${waitingData.gameId}`);
         subscription.unsubscribe();
       };
     }

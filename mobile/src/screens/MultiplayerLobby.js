@@ -16,22 +16,26 @@ const GameLobby = () => {
     const [filteredPlayers, setFilteredPlayers] = useState([]); // Lista de jugadores filtrados
     const { users, client, invitation,setInvitation, setInvitationCollection,gameId, setGameId,suscribeToGameSocket,implementationGameBody,setImplementationGameBody,usernameHost,setUsernameHost} = useContext(SocketContext);
     const [isWaiting, setIsWaiting] = useState(false); // Estado para mostrar la sala de espera
-    const [waitingData, setWaitingData] = useState({}); // Datos para la sala de espera
+      // Datos para la sala de espera
+    const [waitingData, setWaitingData] = useState({
+        host: { id: null, username: null },
+        guest: { id: null, username: null },
+        accepted: false, // Inicialmente en false
+    });
+   
     const [userObj, setUserObj] = useState({}); // Estado para userObj
     const [invitationSent, setInvitationSent] = useState(false);
     const [continuar, setContinuar] = useState(null);
     const route = useRoute();
-    const [invitadoPrueba, setInvitadoPrueba] = useState(null)
     const { selectedCategoryID } = route.params;
     const [gameData, setGameData] = useState([]); 
-
+    
     useEffect(() => {
         return () => {
             setImplementationGameBody(null); // Reinicia el estado al desmontar
-            const Host = JSON.stringify(userObj);
-            AsyncStorage.setItem('Host', Host);
         };
     }, []);
+    
 
     useEffect(() => {
         const loadUser = async () => {
@@ -41,17 +45,26 @@ const GameLobby = () => {
             if (jsonValue != null) {
               const storedUser = JSON.parse(jsonValue); // Parsear el JSON
               setUserObj(storedUser); // Establecer el estado con los datos recuperados
-              //console.log('Usuario cargado desde AsyncStorage:', storedUser);
+      
+              // Verifica que 'userHost' contiene datos válidos antes de guardarlo
+              if (storedUser && storedUser.userId && storedUser.username) {
+                // Guardar el objeto 'storedUser' en la clave 'Host' en AsyncStorage
+                await AsyncStorage.setItem('Host', JSON.stringify(storedUser));
+                console.log('Host guardado:', storedUser);
+              } else {
+                console.error('Datos inválidos en storedUser:', storedUser);
+              }
             } else {
-              //console.log('No se encontró un usuario en AsyncStorage.');
+              console.log('No se encontró un usuario en AsyncStorage.');
             }
           } catch (error) {
             console.error('Error al obtener el usuario de AsyncStorage:', error);
           }
         };
-    
+      
         loadUser(); // Llamar a la función al montar el componente
       }, []); // Se ejecuta solo al montar
+      
     
 
     useEffect(() => {
@@ -97,9 +110,10 @@ const GameLobby = () => {
         setInviteAction(userObj.username, userObj.userId, userGuest.userId, `${userObj.username} - Te ha invitado a jugar`);
         client.current.send(`/topic/lobby/${userGuest.userId}`, {}, JSON.stringify(invitationData));
         setUsernameHost(userObj.username);
-        const Invitado = JSON.stringify(userObj);
-        setInvitadoPrueba(Invitado);
-        AsyncStorage.setItem('Guest', Invitado);
+
+        AsyncStorage.setItem('Guest', JSON.stringify(userGuest));
+        console.log('Guest guardado:', userGuest);
+    
         setWaitingData({
             host: { id: userObj.userId, username: userObj.username },
             guest: { id: userGuest.userId, username: null }, // Aún no se conoce el username del invitado
@@ -107,11 +121,11 @@ const GameLobby = () => {
         });
         setIsWaiting(true);
     }
+    
  
     // 2)
     // Se gestiona que accion realizar dependiendo de la respuesta de la invitacion del socket
     useEffect(() => {
-        console.log("1   ", JSON.stringify(invitation, null, 2));
         if (invitation) {
             handleInvitationInteraction(invitation);
             
@@ -121,11 +135,15 @@ const GameLobby = () => {
     // 2.1)
     const handleInvitationInteraction = (invitation) => {
         if (invitation) {
-            console.log("2   ", JSON.stringify(invitation, null, 2));
             if (invitation.action === 'INVITE_RESPONSE') {
-                setWaitingData(prev => ({
+                // Actualiza el estado de waitingData con el estado de aceptación
+                setWaitingData((prev) => ({
                     ...prev,
-                    guest: { id: invitation.userIdGuest, username: invitation.usernameGuest },
+                    guest: {
+                        id: invitation.userIdGuest,
+                        username: invitation.usernameGuest || null, // Puede ser null si no viene el username
+                    },
+                    accepted: invitation.accepted, // Nuevo campo para habilitar el botón
                 }));
                 handleResponse(invitation);
             }
@@ -134,25 +152,22 @@ const GameLobby = () => {
         }
     };
     
+    
 
     // 3) solo guest si acepta (esto se gestiona en la vista de invitations)
     // solo si soy host
     // Enviar la respuesta al canal destinatario del guest
     const handleResponse = async (invitation) => {
-        console.log("3   ", JSON.stringify(invitation, null, 2));
         if (invitation.accepted) {
-            console.log("4   ", JSON.stringify(invitation, null, 2));
             handleCreateGame(invitation); // retorna y seta el gameId
         }
     }
 
     const handleCreateGame = async (invitation) => {
-        console.log("5   ", JSON.stringify(invitation, null, 2));
-        console.log(invitation);
         if (invitation.accepted == false) {
             console.log("Invitación rechazada.");
         } else {
-            console.log("12345");
+
             const userHost = {
                 username: invitation.usernameHost,
                 userId: invitation.userIdHost
@@ -162,12 +177,13 @@ const GameLobby = () => {
                 username: invitation.usernameGuest,
                 userId: invitation.userIdGuest
             };
-    
+
+
             try {
                 // Llamar a la función para crear el juego, pasando los datos del anfitrión e invitado
                 const response = await createGame(userHost, userGuest);
                 if (response) {
-                    console.log("6");
+                   
                     const gameId = response;  
                     setGameId(gameId); // Devolver el gameId para usarlo después
                 } else {
@@ -183,9 +199,7 @@ const GameLobby = () => {
     };
 
     useEffect(() => {
-        console.log("7      " +gameId);
         if (gameId !== null) {
-            console.log("8");
             setResponseIdGame(gameId, "Se ha enviado el id de la partida");
             client.current.send(`/topic/lobby/${invitation.userIdGuest}`, {}, JSON.stringify(invitationData));
             suscribeToGameSocket(gameId);
@@ -204,12 +218,10 @@ const GameLobby = () => {
             gameData.finalSlot2 = getRandomItem(gameData.categories[1].gameModes);
             gameData.finalSlot3 = getRandomItem(gameData.categories[2].gameModes);
     
-            console.log("Datos que se envían al servidor:", JSON.stringify(gameData, null, 2));
 
             // Llamar a `loadGameMulti` sin esperar un retorno
             await loadGameMulti(gameData, gameId);
             setContinuar(true);
-            console.log("El juego se cargó correctamente en el servidor");
         } catch (error) {
             console.error("Error al inicializar el juego:", error.message);
             Alert.alert("Error", "No se pudieron cargar los datos del juego");
@@ -219,12 +231,10 @@ const GameLobby = () => {
 
     // Luego de dar inicio a la partida redirecciona al host a la vista de la ruleta
     useEffect(() => {
-        console.log("useEffect ejecutado. implementationGameBody:", implementationGameBody);
         if (continuar) {  
             setContinuar(false);
             if (implementationGameBody) {
                 if (implementationGameBody.status === "INVITE_RULETA") {
-                    console.log("Estado INVITE_RULETA detectado. Navegando a Home..."+gameId);
                     setTimeout(() => {
                         navigation.navigate("SlotMachineMulti", {
                             
@@ -235,7 +245,7 @@ const GameLobby = () => {
                                 idGame: gameId,
                         
                         });
-                    }, 3000);
+                    }, 1000);
                 }
             }
         }
@@ -248,14 +258,20 @@ const GameLobby = () => {
             <Text>Host: {waitingData.host.username}</Text>
             <Text>Invitado: {waitingData.guest.username || "Esperando..."}</Text>
             <TouchableOpacity
-                style={[styles.startButton, !waitingData.guest.username && styles.disabledButton]}
+                style={[
+                    styles.startButton,
+                    !waitingData.accepted && styles.disabledButton, // Estilo deshabilitado
+                ]}
                 onPress={initGameHost}
-                disabled={!waitingData.guest.username}
+                disabled={!waitingData.accepted} // El botón se habilita si accepted es true
             >
-                <Text style={styles.buttonText}>Iniciar partida</Text>
+                <Text style={styles.buttonText}>
+                    {waitingData.accepted ? "Iniciar partida" : "Esperando..."}
+                </Text>
             </TouchableOpacity>
         </View>
     );
+    
     
 
     // Renderizar un jugador

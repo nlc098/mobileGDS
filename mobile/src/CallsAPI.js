@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.0.103:8080/api";
+const API_URL = "http://192.168.1.11:8080/api";
 
 // Función para decodificar el JWT, retorna el userId
 const decodeJWT = (token) => {
@@ -481,7 +481,6 @@ async logout(username) {
         }), // Pasar directamente los datos al cuerpo
       });
   
-      console.log('Respuesta enviada correctamente');
     } catch (error) {
       // Manejo de errores
       console.error('Error al enviar respuesta:', error.message);
@@ -505,7 +504,6 @@ async logout(username) {
     // Método para crear un juego multijugador
   async createGame(userHost, userGuest) {
     try {
-      console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
       const token = await this.getToken(); // Obtener el token del usuario
       if (!token) {
         throw new Error("Token no encontrado");
@@ -587,7 +585,6 @@ async logout(username) {
             throw new Error(`Error del servidor: ${errorText || response.status}`);
         }
 
-        console.log("Respuesta del servidor exitosa pero vacía");
         return; // No intentamos analizar el cuerpo
     } catch (error) {
         console.error(error.message);

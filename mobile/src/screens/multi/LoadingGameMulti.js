@@ -1,6 +1,5 @@
 import { useRoute, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState, useContext } from "react";
-import { initgameMulti } from '../../CallsAPI';
 import {
   View,
   Text,
@@ -11,9 +10,9 @@ import { SocketContext } from '../../WebSocketProvider';
 const LoadingGameMulti = () => {
   const route = useRoute();
   const navigation = useNavigation(); 
-  const { gameId, implementationGameBody, setGameId, setInitGameModes, initGameModes } = useContext(SocketContext); // Se obtiene el id del juego desde el contexto
-  const { dtoinitGameMultiRequest } = route.params; // Se obtiene el request desde los params de la ruta
-  const [timeLeft, setTimeLeft] = useState(5);
+  const { gameId, initGameModes, implementationGameBody, setGameId, setInitGameModes } = useContext(SocketContext); 
+  const { dtoinitGameMultiRequest } = route.params; 
+  const [isInitializing, setIsInitializing] = useState(true); // Nuevo estado para manejar la inicialización
 
   // Función para inicializar el juego multijugador
   const initializeMultiplayerGame = () => {
@@ -27,35 +26,26 @@ const LoadingGameMulti = () => {
   useEffect(() => {
     if (implementationGameBody && Object.keys(implementationGameBody).length > 0) {
       initializeMultiplayerGame();
+      setIsInitializing(false); // Marca que la inicialización ha terminado
     }
   }, [implementationGameBody]);
 
-  const initPlayGame = () => {
-    navigation.navigate("GameLoadMulti");
-  };
-
-  // Lógica para el temporizador
+  // Navega automáticamente cuando la inicialización está lista, con un retraso de 1 segundo
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev === 1) {
-          clearInterval(timer);
-          if (gameId && initGameModes) {
-            initPlayGame();
-          }
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    if (!isInitializing && gameId && initGameModes) {
+      const delayNavigation = setTimeout(() => {
+        navigation.navigate("GameLoadMulti");
+      }, 700); // 0,7 segundo de espera
 
-    return () => clearInterval(timer);
-  }, [gameId, initGameModes]);
+      return () => clearTimeout(delayNavigation); // Limpia el temporizador al desmontar
+    }
+  }, [isInitializing, gameId, initGameModes]);
 
   return (
     <View style={styles.container}>
       <View style={styles.timerContainer}>
         <View style={styles.circle}>
-          <Text style={styles.timerText}>{timeLeft}</Text>
+          <Text style={styles.timerText}>{isInitializing ? "..." : "¡Listo!"}</Text>
         </View>
       </View>
       <Text style={styles.text}>PREPÁRATE...</Text>

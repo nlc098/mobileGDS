@@ -52,7 +52,6 @@ const spin = async () => {
   }, spinDuration * 0.05);
 
   setTimeout(async () => {
-    console.log(ruletaGame.categories);
     clearInterval(spinInterval);
 
     setSlot1(finalSlot1);
