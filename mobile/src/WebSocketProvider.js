@@ -20,6 +20,8 @@ export const SocketProvider = ({ children }) => {
     const [initGameModes, setInitGameModes] = useState({});
     const [ answer, setAnswer ] = useState(null);
     const [ isCorrectAnswer, setIsCorrectAnswer ] = useState(null);
+    const [hostWins, setHostWins] = useState(0); // Contador de victorias del host
+    const [guestWins, setGuestWins] = useState(0);
 
     useEffect(() => {
         // Guarda los usuarios conectados en AsyncStorage
@@ -116,6 +118,8 @@ export const SocketProvider = ({ children }) => {
                 setIsCorrectAnswer,
                 answer,
                 isCorrectAnswer, 
+                hostWins, setHostWins,
+                guestWins, setGuestWins
             }}
         >
             {children}

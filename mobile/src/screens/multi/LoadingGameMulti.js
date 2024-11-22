@@ -35,7 +35,7 @@ const LoadingGameMulti = () => {
     if (!isInitializing && gameId && initGameModes) {
       const delayNavigation = setTimeout(() => {
         navigation.navigate("GameLoadMulti");
-      }, 700); // 0,7 segundo de espera
+      }, 1000); // 0,7 segundo de espera
 
       return () => clearTimeout(delayNavigation); // Limpia el temporizador al desmontar
     }

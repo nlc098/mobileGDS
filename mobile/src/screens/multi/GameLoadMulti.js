@@ -25,11 +25,12 @@ const dialogbubble = require("../../../assets/hint-globe.png");
 const GameLoadMulti = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { gameId, implementationGameBody, setGameId, setInitGameModes, initGameModes, isCorrectAnswer,setIsCorrectAnswer} = useContext(SocketContext); // Se obtiene el id del juego desde el contexto
+  const { gameId, implementationGameBody, setGameId, setInitGameModes, initGameModes, isCorrectAnswer,setIsCorrectAnswer,hostWins, setHostWins, guestWins, setGuestWins} = useContext(SocketContext); // Se obtiene el id del juego desde el contexto
 
  
   const [answerData, setAnswerData] = useState([]);
-
+  const hostWinsRef = useRef(hostWins);  // Referencia para hostWins
+  const guestWinsRef = useRef(guestWins);  // Referencia para guestWins // Contador de victorias del guest
   const timeUsed = useRef(0);
   const initialTime = 30;
   const [timeLeft, setTimeLeft] = useState(initialTime);
@@ -52,6 +53,13 @@ const GameLoadMulti = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   
+    // Actualiza las referencias cuando los puntos cambian
+    useEffect(() => {
+      hostWinsRef.current = hostWins;
+      guestWinsRef.current = guestWins;
+    }, [hostWins, guestWins]);
+
+    
   useEffect(() => {
     const getUserData = async () => {
       try {
@@ -85,7 +93,8 @@ const GameLoadMulti = () => {
         console.log('Error al obtener datos desde AsyncStorage:', error);
       }
     };
-  
+    setHostWins(0);
+    setGuestWins(0);
     getUserData(); // Ejecutar la función
   }, []); // Se ejecuta una sola vez al montar el componente
   
@@ -110,32 +119,36 @@ const GameLoadMulti = () => {
     }
 }, [isCorrectAnswer]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (!isCheckingAnswer) { // Solo actualizar el tiempo si no se está verificando la respuesta
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            setCurrentGameIndex(prevIndex => {
-              const nextIndex = prevIndex + 1;
-              if (nextIndex >= Object.keys(data).length) {
-                clearInterval(timer);
-                const { idGameSingle } = answerData;
-                navigation.navigate('GameFinished', { idGameSingle });
-                return prevIndex;
-              }
-              setHints([]);
-              return nextIndex;
-            });
-            return initialTime; // Reinicia el tiempo
-          }
-          return prev - 1;
-        });
-        timeUsed.current += 1;
-      }
-    }, 1000);
-  
-    return () => clearInterval(timer);
-  }, [data, navigation, isCheckingAnswer]); 
+useEffect(() => {
+  const timer = setInterval(() => {
+    if (!isCheckingAnswer) { // Solo actualizar el tiempo si no se está verificando la respuesta
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          setCurrentGameIndex(prevIndex => {
+            const nextIndex = prevIndex + 1;
+            if (nextIndex >= Object.keys(data).length) {
+              clearInterval(timer);
+              console.log(`Tiempo agotado: Host -> ${hostWins}, Guest -> ${guestWins}`);
+              // Navegar con los valores actualizados
+              navigation.navigate('GameFinishedMulti', {
+                gameId,
+              });
+              return prevIndex;
+            }
+            setHints([]); // Limpiar las pistas
+            return nextIndex;
+          });
+          return initialTime; // Reinicia el tiempo
+        }
+        return prev - 1;
+      });
+      timeUsed.current += 1;
+    }
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, [data, navigation, isCheckingAnswer]);  // Añadir dependencias de `hostWins` y `guestWins`
+
   
 
     // solo para multiplayer
@@ -157,7 +170,11 @@ useEffect(() => {
         // Si gana el Host
         if (implementationGameBody.idUserWin == storedHost.userId) {
           setWinner(hostName);
-
+          setHostWins(prevWins => {
+            const updatedWins = prevWins + 1;
+            console.log(`Puntos actualizados: Host (${hostName}) -> ${updatedWins}, Guest (${guestName}) -> ${guestWins}`);
+            return updatedWins;
+          });
           // Si eres el Host, ganaste; de lo contrario, perdiste
           if (isHost) {
             message = "🎉 ¡Ganaste la ronda! 🎉";
@@ -170,7 +187,11 @@ useEffect(() => {
         // Si gana el Guest
         else if (implementationGameBody.idUserWin == storedGuest.userId) {
           setWinner(guestName);
-
+          setGuestWins(prevWins => {
+            const updatedWins = prevWins + 1;
+            console.log(`Puntos actualizados: Host (${hostName}) -> ${hostWins}, Guest (${guestName}) -> ${updatedWins}`);
+            return updatedWins;
+          });
           // Si eres el Guest, ganaste; de lo contrario, perdiste
           if (isGuest) {
             message = "🎉 ¡Ganaste la ronda! 🎉";
@@ -191,7 +212,7 @@ useEffect(() => {
       setModalMessage(message);
       setModalVisible(true);
 
-      // Mostrar el modal durante 2 segundos antes de pasar al siguiente modo
+      // Navegar a la siguiente pantalla después de un retraso de 2 segundos
       setTimeout(() => {
         setModalVisible(false);
         handleCorrectAnswer();
@@ -201,6 +222,7 @@ useEffect(() => {
     }
   }
 }, [implementationGameBody]);
+
 
 
 
@@ -239,14 +261,14 @@ useEffect(() => {
     const nextIndex = currentGameIndex + 1; // Índice siguiente
   
     if (nextIndex >= gameKeys.length) {
-      // Si es la última fase, navega al resumen de partida
-      const { idGameSingle } = answerData;
-      navigation.navigate('GameFinished', { idGameSingle });
+      // Navegar a la pantalla de resultados con los puntos actualizados
+      navigation.navigate('GameFinishedMulti', { gameId});
     } else {
-      // Si no es la última fase, avanza al siguiente índice
-      setCurrentGameIndex(nextIndex);
+      setCurrentGameIndex(nextIndex); // Si no es la última fase, avanza al siguiente índice
     }
   };
+  
+  
   
 
   const showNextHint = () => {

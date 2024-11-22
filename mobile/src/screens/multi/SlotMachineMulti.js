@@ -22,9 +22,6 @@ const MultiplayerGameSet = () => {
   const [isSpinning, setIsSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const spinAnimation1 = useRef(new Animated.Value(0)).current;
-  const spinAnimation2 = useRef(new Animated.Value(0)).current;
-  const spinAnimation3 = useRef(new Animated.Value(0)).current;
 
   const spinDuration = 1500;
 
@@ -121,13 +118,13 @@ const spin = async () => {
         </View>
         <View style={styles.slotRow}>
           <View style={styles.slotBox}>
-            <Text style={styles.slotText}>{slot1}</Text>
+            <Text style={styles.slotText}>{slot3}</Text>
           </View>
           <View style={styles.slotBox}>
             <Text style={styles.slotText}>{slot2}</Text>
           </View>
           <View style={styles.slotBox}>
-            <Text style={styles.slotText}>{slot3}</Text>
+            <Text style={styles.slotText}>{slot1}</Text>
           </View>
         </View>
         {/* {showResults && (

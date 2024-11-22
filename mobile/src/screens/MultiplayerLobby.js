@@ -255,8 +255,7 @@ const GameLobby = () => {
     const WaitingRoom = () => (
         <View style={styles.waitingContainer}>
             <Text style={styles.waitingTitle}>Sala de Espera</Text>
-            <Text>Host: {waitingData.host.username}</Text>
-            <Text>Invitado: {waitingData.guest.username || "Esperando..."}</Text>
+
             <TouchableOpacity
                 style={[
                     styles.startButton,

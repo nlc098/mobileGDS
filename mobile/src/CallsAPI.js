@@ -692,6 +692,59 @@ async logout(username) {
       throw new Error(error.message);
     }
   }
+
+  async finishPlayGameMulti(idGameMulti) {
+    try {
+      const token = await this.getToken(); // Obtener el token del usuario
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+  
+      const response = await fetch(`${API_URL}/game-multi/game/${idGameMulti}/finish/0`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error al finalizar el juego multijugador. Status: ${response.status}`);
+      }
+  
+      console.log("Juego multijugador finalizado exitosamente");
+    } catch (error) {
+      console.error("Error en finishPlayGameMulti:", error.message);
+    }
+  }
+  
+  async resumeGame(idGameMulti) {
+    try {
+      const token = await this.getToken(); // Obtener el token del usuario
+      if (!token) {
+        throw new Error("Token no encontrado");
+      }
+  
+      const response = await fetch(`${API_URL}/game-multi/v1/resumeGame/${idGameMulti}`, {
+        method: "GET", // Cambiar a POST u otro método si aplica
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error al reanudar el juego: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log("Respuesta de la API:", data); // Opcional: para debug
+      return data; // Devuelve los datos obtenidos
+    } catch (error) {
+      console.error("Error en resumeGame:", error.message);
+      throw error; // Propaga el error para manejarlo fuera
+    }
+  }
   
 }
 
@@ -954,5 +1007,23 @@ export const getImageProfile = async (username) => {
   } catch (error) {
     Alert.alert("Error", error.message);
     return null;
+  }
+};
+
+export const finishPlayGameMulti = async (idGameMulti) => {
+  try {
+    await apiService.finishPlayGameMulti(idGameMulti);
+  } catch (error) {
+    Alert.alert("Error", error.message || "Error desconocido");
+  }
+};
+
+export const resumeGame = async (idGameMulti) => {
+  try {
+    const data = await apiService.resumeGame(idGameMulti); // Llama a la función dentro del servicio
+    return data; // Retorna los datos si es necesario
+  } catch (error) {
+    Alert.alert("Error", error.message || "Error desconocido al reanudar el juego");
+    return null; // Retorna null si ocurre un error
   }
 };

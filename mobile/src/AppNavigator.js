@@ -25,7 +25,7 @@ import LoadingGameMulti from './screens/multi/LoadingGameMulti';
 import MultipleChoiceMulti from './screens/multi/MultipleChoiceMulti';
 import OrderWordMulti from './screens/multi/OrderWordMulti';
 import SlotMachineMulti from './screens/multi/SlotMachineMulti';
-
+import GameFinishedMulti from './screens/multi/GameFinishedMulti';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -194,6 +194,11 @@ const AppNavigator = () => {
       <Stack.Screen
         name="SlotMachineMulti"
         component={SlotMachineMulti}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="GameFinishedMulti"
+        component={GameFinishedMulti}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
