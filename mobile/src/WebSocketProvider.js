@@ -30,7 +30,7 @@ export const SocketProvider = ({ children }) => {
 
     // Conexión al servidor WebSocket
     const connect = (dtoUserOnline) => {
-        client.current = Stomp.over(() => new SockJS('http://192.168.1.11:8080/ws'));
+        client.current = Stomp.over(() => new SockJS('http://192.168.1.5:8080/ws'));
 
         if (dtoUserOnline === null) {
             console.error("DtoUserOnline NULL");
@@ -101,10 +101,10 @@ export const SocketProvider = ({ children }) => {
                 setInvitationCount,
                 invitationCollection,
                 setInvitationCollection,
-                isWaiting,  // Pasar el estado isWaiting
-                setIsWaiting,  // Pasar la función setIsWaiting
-                waitingData, // Pasar los datos de espera
-                setWaitingData, // Pasar la función setWaitingData
+                isWaiting,  
+                setIsWaiting,  
+                waitingData,
+                setWaitingData,
                 gameId, setGameId,
                 suscribeToGameSocket,
                 implementationGameBody,

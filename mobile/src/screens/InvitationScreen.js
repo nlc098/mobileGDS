@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SocketContext } from '../WebSocketProvider'; // Importa el contexto de tu WebSocket
+import { SocketContext } from '../WebSocketProvider';
 import { useNavigation } from '@react-navigation/native';
 
 const InvitationScreen = () => {
@@ -58,7 +58,7 @@ useEffect(() => {
           })),
       ]);
 
-      setInvitationCollection([]); // Limpiar la colección de invitaciones después de procesarlas
+      //setInvitationCollection([]); // Limpiar la colección de invitaciones después de procesarlas
     }
   }, [invitationCollection]);
 
@@ -84,9 +84,6 @@ useEffect(() => {
           : `Rechazaste la invitación de ${invitation.usernameHost}`,
         gameId: invitation.gameId,
       };
-
-
-      
 
       // Enviar la respuesta al servidor a través de WebSocket
       if (client.current) {
@@ -126,6 +123,7 @@ useEffect(() => {
   };
 
   const handleReject = (invitationId) => {
+    setInvitationCollection([]);
     const invitation = invitations.find((inv) => inv.id === invitationId);
 
     if (invitation) {
@@ -136,6 +134,7 @@ useEffect(() => {
       Alert.alert('Invitación rechazada', 'La invitación fue rechazada.');
     }
   };
+  
   useEffect(() => {
     if (invitation) {
         handleInvitationInteraction(invitation);
@@ -157,18 +156,17 @@ useEffect(() => {
 useEffect(() => {
   if (implementationGameBody) {
       if (implementationGameBody.status === "INVITE_RULETA") {
-
-          setTimeout(() => {
-              navigation.navigate("SlotMachineMulti", {
-                  
-                      ruletaGame: implementationGameBody.ruletaGame,
-                      finalSlot1: implementationGameBody.finalSlot1,
-                      finalSlot2: implementationGameBody.finalSlot2,
-                      finalSlot3: implementationGameBody.finalSlot3,
-                      idGame: gameId,
-              
-              });
-          }, 1000);
+        setTimeout(() => {
+            navigation.navigate("SlotMachineMulti", {
+                
+              ruletaGame: implementationGameBody.ruletaGame,
+              finalSlot1: implementationGameBody.finalSlot1,
+              finalSlot2: implementationGameBody.finalSlot2,
+              finalSlot3: implementationGameBody.finalSlot3,
+              idGame: gameId,
+            
+            });
+        }, 1000);
       }
   }
 }, [implementationGameBody]);

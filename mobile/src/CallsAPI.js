@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.1.11:8080/api";
+const API_URL = "http://192.168.1.5:8080/api";
 
 // Función para decodificar el JWT, retorna el userId
 const decodeJWT = (token) => {
